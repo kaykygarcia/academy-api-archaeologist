@@ -1,6 +1,6 @@
 # Architecture
 
-API Archaeologist is a static React application built with Vite. The TypeScript core is independent of React, the DOM and storage. The web package imports its source through the workspace package export; Vite bundles it into the application and its worker. There is no application server or remote database.
+API Archaeologist is a static React application built with Vite. The TypeScript core is independent of React, the DOM and storage. The web package imports its source through the workspace package export; Vite bundles it into the application and its worker. There is no application server or remote database. Samples, contracts and snapshots are processed and stored only in the browser and are never sent anywhere. The public Cloudflare Pages deployment enables Cloudflare Web Analytics for cookieless page-view and performance metrics; its beacon does not read page content or samples. Self-hosted builds include no analytics.
 
 ## Evidence before generated types
 

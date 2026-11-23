@@ -50,9 +50,11 @@ These are Vitest-measured artificial workloads, not browser or production benchm
 
 ## Local storage and security
 
-Raw samples remain in session memory. Explicitly saved snapshots keep aggregated contracts and metadata in IndexedDB; browser eviction, private browsing or clearing site data can remove them. They are not a backup. Property names, endpoint paths and snapshot names may still be sensitive. Remove tokens, personal data and secrets before sharing screenshots or exports.
+Samples, contracts and snapshots are processed and stored only in the browser and are never sent anywhere. Raw samples remain in session memory. Explicitly saved snapshots keep aggregated contracts and metadata in IndexedDB; browser eviction, private browsing or clearing site data can remove them. They are not a backup. Property names, endpoint paths and snapshot names may still be sensitive. Remove tokens, personal data and secrets before sharing screenshots or exports.
 
-The production CSP permits `style-src 'self' 'unsafe-inline'` because CodeMirror injects styles. Scripts remain restricted to self; inline scripts and evaluation are not enabled. Fonts and assets are bundled locally. The policy must be served by the host: Vite preview does not interpret Cloudflare's `_headers` file. Nginx and Cloudflare headers therefore require validation on the actual production serving path, including checking the browser console for CSP violations.
+The production CSP permits `style-src 'self' 'unsafe-inline'` because CodeMirror injects styles. Docker's `nginx.conf` restricts scripts and connections to self. The only intended CSP difference in Cloudflare Pages' `_headers` is allowing `https://static.cloudflareinsights.com` in `script-src` and `https://cloudflareinsights.com` in `connect-src` for Web Analytics. Inline scripts and evaluation are not enabled. Fonts and application assets are bundled locally. The policy must be served by the host: Vite preview does not interpret Cloudflare's `_headers` file. Nginx and Cloudflare headers therefore require validation on the actual production serving path, including checking the browser console for CSP violations.
+
+The public deployment at https://academy-api-archaeologist.kaykygarcia.dev enables Cloudflare Web Analytics for cookieless page-view and performance metrics. The beacon does not read page content or samples. Self-hosted builds (Docker or your own static hosting) include no analytics.
 
 ## Drift boundaries
 

@@ -6,7 +6,7 @@ Read `README.md`, `docs/architecture.md` and `docs/limitations.md` before implem
 - Distinguish missing from null. Count presence per parent object occurrence; never present counts as probabilities.
 - Keep TypeScript strict. No `any`, non-null assertions or casts that silence errors. Use `Map` and `Object.hasOwn` for user keys.
 - No `eval`, `new Function` or `dangerouslySetInnerHTML`. Never log sample content.
-- Keep processing local: no network calls, analytics, CDN fonts or external assets.
+- Keep processing local: samples, contracts and snapshots never leave the browser. No network calls, CDN fonts or external assets in the app. The only third party is Cloudflare Web Analytics, injected by the Cloudflare Pages deployment and allowed only in `apps/web/public/_headers` and the matching E2E network guard; the Docker build stays without analytics.
 - Prefer simple functions and local state. No managers, factories, registries, service layers, global state libraries or gratuitous memoization.
 - Comment only non-obvious decisions. No emojis anywhere. No boilerplate JSDoc.
 - Every visible control must work. No hardcoded results or invented metrics.

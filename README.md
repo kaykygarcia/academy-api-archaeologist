@@ -23,16 +23,17 @@ Tools such as quicktype already address type generation from JSON. This project'
 
 ## Privacy and security
 
-- Samples are processed locally, without analytics, remote inference or API requests. Fonts and assets are bundled.
+- Samples, contracts and snapshots are processed and stored only in the browser and are never sent anywhere. There is no remote inference or API fetching. Fonts and application assets are bundled.
+- The public deployment at https://academy-api-archaeologist.kaykygarcia.dev uses Cloudflare Web Analytics. Its beacon records the page URL path, referrer, browser and device data derived from the user agent, and performance timings; Cloudflare derives approximate location from the IP address. It sets no cookies and does not read page content or samples. The app has no routes or query strings, so its URL carries no user data. Self-hosted builds (Docker or your own static hosting) include no analytics.
 - Snapshots contain aggregated contracts and metadata, not raw response bodies. Property names can still disclose API information.
 - Input is parsed as JSON and rendered as text. Generated code is exported, never executed by the application.
-- Production headers restrict resources to the app origin. Remove tokens, personal data and secrets before sharing screenshots or exports.
+- Production headers restrict resources to the app origin, with a Cloudflare Pages exception for the Web Analytics script and beacon. Remove tokens, personal data and secrets before sharing screenshots or exports.
 
 ## Limitations
 
 Samples do not prove the full API contract. A field observed in every parent may still be optional in unseen responses, and no observed drift does not guarantee compatibility. The engine does not infer enums, formats or discriminated unions. Generated schemas allow additional properties. Browser storage may be cleared or evicted.
 
-Inputs are bounded to 200 samples, 5 MiB per sample, 20 MiB per session, depth 50 and 2,000,000 visited values. The [limitations document](docs/limitations.md) records validator edge cases, the measured artificial workloads and the CSP style exception. No public deployment has been made.
+Inputs are bounded to 200 samples, 5 MiB per sample, 20 MiB per session, depth 50 and 2,000,000 visited values. The [limitations document](docs/limitations.md) records validator edge cases, the measured artificial workloads and the CSP style exception.
 
 ## Local use
 
@@ -52,7 +53,7 @@ pnpm build
 pnpm --filter @api-archaeologist/web preview
 ```
 
-The preview listens on `http://127.0.0.1:4173`. It does not apply Cloudflare's `_headers`; use the production container to check the serving headers and CSP.
+The preview listens on `http://127.0.0.1:4173`. It does not apply Cloudflare's `_headers`; use the production container to check the Docker headers and CSP, and the live Pages deployment to check its analytics exception.
 
 For development in Docker, run `docker compose up --build` and open `http://127.0.0.1:5173`. The container runs as `node`, mounts source for hot reload and keeps its three dependency directories and pnpm store in named volumes. Stop it with `docker compose down`. Restarting preserves those volumes and does not affect browser snapshots.
 
@@ -87,11 +88,11 @@ E2E builds and launches Vite preview automatically. The Chromium project runs de
 E2E_BASE_URL=http://127.0.0.1:8080 pnpm test:e2e
 ```
 
-With `E2E_BASE_URL` set, Playwright does not launch a server. Each test rejects requests outside the app origin and uses fictional data. Failure reports are written to `apps/web/playwright-report`.
+With `E2E_BASE_URL` set, Playwright does not launch a server. Each test rejects requests outside the app origin except for the exact Cloudflare Web Analytics hostnames `static.cloudflareinsights.com` and `cloudflareinsights.com`, and uses fictional data. Console errors and page errors still fail. Failure reports are written to `apps/web/playwright-report`.
 
 ## Cloudflare Pages
 
-The static build is prepared for Cloudflare Pages; see the [deployment instructions](docs/deploy-cloudflare-pages.md). Deployment has not been done and no public URL exists yet.
+The application is deployed at https://academy-api-archaeologist.kaykygarcia.dev on Cloudflare Pages; see the [deployment record and verification checklist](docs/deploy-cloudflare-pages.md).
 
 ## License
 

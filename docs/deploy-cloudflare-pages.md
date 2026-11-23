@@ -1,13 +1,33 @@
 # Cloudflare Pages deployment
 
-Deployment has not been performed. There is no verified public URL. The maintainer must connect the repository and authorize deployment in their own Cloudflare account.
+The application is deployed at https://academy-api-archaeologist.kaykygarcia.dev. The Pages project is `api-archaeologist`, with a custom domain on Cloudflare DNS. Pages serves the static build, not the Docker container.
 
-Create a Pages project using Git integration. Use the repository root as the root directory (leave the subdirectory field empty), `main` as the production branch, `pnpm build` as the build command, and `apps/web/dist` as the output directory relative to the repository root. Serve the static build, not the Docker container.
+## Build settings
 
-Use Node 24.21.0 from [`.nvmrc`](../.nvmrc) and pnpm 12.23.0 from `packageManager` in [package.json](../package.json). Ensure pnpm is available through Corepack or an explicit installation in the build environment, set `COREPACK_ENABLE_DOWNLOAD_PROMPT=0`, and let Pages install dependencies from `pnpm-lock.yaml` during its automatic dependency installation step. The build command is only `pnpm build`; do not include a second install command. Do not add runtime secrets; this application has no backend.
+- Root directory: empty (repository root).
+- Production branch: `main`.
+- Framework preset: `None`.
+- Build command: `pnpm build`.
+- Build output directory: `apps/web/dist`.
+- Node version: from [`.nvmrc`](../.nvmrc), which Pages reads.
+- Required environment variable: `PNPM_VERSION=12.23.0`. Pages does not read `packageManager` from [package.json](../package.json); the default image ships pnpm 10.
 
-`VITE_REPOSITORY_URL` is an optional build-time variable for the repository URL; the GitHub and Documentation links are hidden when it is unset.
+Pages installs dependencies from `pnpm-lock.yaml` during its automatic dependency installation step. The build command is only `pnpm build`; it does not include a second install command. No runtime secrets are needed; this application has no backend.
 
-Vite copies [public/_headers](../apps/web/public/_headers) into `apps/web/dist/_headers`. Cloudflare Pages uses it to serve the CSP, content-type protection, referrer policy and permissions policy. Confirm this file is present in the uploaded output and verify the response headers after deployment. No top-level `404.html` is supplied, so Pages can use its default SPA fallback.
+`VITE_REPOSITORY_URL` is an optional build-time variable for the repository URL; setting it shows the GitHub and Documentation links, which are hidden when it is unset.
 
-Before recording a URL, verify the deployed page, fixture analysis, clipboard, snapshots after reload and the five-change drift example. Inspect requests for external origins and the browser console for CSP violations, including worker and editor loading. The Playwright suite can target the deployment with `E2E_BASE_URL=https://your-verified-host pnpm test:e2e`; this skips the local preview server. Clipboard access requires a secure context. Record only a URL that has actually been deployed and checked.
+## Headers and analytics
+
+Vite copies [public/_headers](../apps/web/public/_headers) into `apps/web/dist/_headers`. Cloudflare Pages uses it to serve the CSP, content-type protection, referrer policy and permissions policy. No top-level `404.html` is supplied, so Pages can use its default SPA fallback.
+
+Cloudflare Web Analytics is enabled on this deployment and allowed by `_headers`. Cloudflare injects the script from `https://static.cloudflareinsights.com`; the beacon connects to `https://cloudflareinsights.com`. It collects cookieless page-view and performance metrics without reading page content or samples. Samples, contracts and snapshots are processed and stored only in the browser and are never sent anywhere.
+
+The only intended CSP difference between `_headers` and [nginx.conf](../nginx.conf) is the two Web Analytics origins: `https://static.cloudflareinsights.com` in `script-src` and `https://cloudflareinsights.com` in `connect-src`. Every other directive is the same. Nginx remains restricted to self for scripts and connections; self-hosted builds (Docker or your own static hosting) include no analytics.
+
+## Post-deploy verification checklist
+
+- Confirm `apps/web/dist/_headers` is present in the uploaded output and verify the response headers on the deployed page.
+- Verify the deployed page, fixture analysis, clipboard, snapshots after reload and the five-change drift example. Clipboard access requires a secure context.
+- Inspect requests: only the app origin and the exact Web Analytics hostnames `static.cloudflareinsights.com` and `cloudflareinsights.com` are allowed by the E2E network guard.
+- Check the browser console for CSP violations, including worker, editor and analytics loading. Console errors and page errors still fail E2E checks.
+- Run the Playwright suite against the live URL with `E2E_BASE_URL=https://academy-api-archaeologist.kaykygarcia.dev pnpm test:e2e`. Setting `E2E_BASE_URL` skips the local preview server.
