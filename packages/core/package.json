@@ -1,0 +1,21 @@
+{
+  "name": "@api-archaeologist/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
+    "lint": "eslint . --max-warnings 0",
+    "bench": "vitest bench --run --reporter=verbose"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "ajv": "8.20.0",
+    "vitest": "5.1.1",
+    "zod": "4.6.7",
+    "typescript": "6.0.3"
+  }
+}
