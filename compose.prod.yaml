@@ -1,0 +1,9 @@
+name: api-archaeologist-prod
+
+services:
+  web:
+    build:
+      context: .
+      target: runtime
+    ports:
+      - '127.0.0.1:8080:8080'
