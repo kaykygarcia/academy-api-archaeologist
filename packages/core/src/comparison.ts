@@ -261,3 +261,29 @@ function walk(
   compareProperties(before, after, path, changes);
   compareElements(before, after, path, changes);
 }
+
+export function summarizeChanges(changes: readonly ContractChange[]): string {
+  const counts: Record<ChangeSeverity, number> = {
+    'potentially-breaking': 0,
+    review: 0,
+    informational: 0,
+  };
+  for (const change of changes) counts[change.severity]++;
+  const parts = [
+    `${changes.length.toLocaleString('pt-BR')} ${pluralize(changes.length, 'alteração', 'alterações')}`,
+  ];
+  if (counts['potentially-breaking']) {
+    const count = counts['potentially-breaking'];
+    parts.push(
+      `${count.toLocaleString('pt-BR')} ${pluralize(count, 'potencialmente incompatível', 'potencialmente incompatíveis')}`,
+    );
+  }
+  if (counts.review)
+    parts.push(`${counts.review.toLocaleString('pt-BR')} revisar`);
+  if (counts.informational) {
+    parts.push(
+      `${counts.informational.toLocaleString('pt-BR')} ${pluralize(counts.informational, 'informativa', 'informativas')}`,
+    );
+  }
+  return parts.join(' · ');
+}

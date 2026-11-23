@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { compareContracts, inferContract } from '../src';
+import { compareContracts, inferContract, summarizeChanges } from '../src';
 import type { ChangeCode, ChangeSeverity, JsonValue } from '../src';
 import { baseline, current } from './helpers';
 
@@ -344,4 +344,18 @@ test('array evidence preserves counts and uses singular and plural forms', () =>
   ).toBe(
     'Contagem: 0 elementos em 1 array no baseline, 1.000 elementos em 1 array nas novas amostras.',
   );
+});
+
+test('comparison summary includes severity counts and omits empty groups', () => {
+  expect(summarizeChanges(diff(baseline, current))).toBe(
+    '5 alterações · 2 potencialmente incompatíveis · 1 revisar · 2 informativas',
+  );
+  expect(summarizeChanges([])).toBe('0 alterações');
+  expect(summarizeChanges(diff([{}], [{ added: true }]))).toBe(
+    '1 alteração · 1 informativa',
+  );
+  expect(summarizeChanges(diff([{ removed: true }], [{}]))).toBe(
+    '1 alteração · 1 potencialmente incompatível',
+  );
+  expect(summarizeChanges(diff([1, 'a'], [1]))).toBe('1 alteração · 1 revisar');
 });
