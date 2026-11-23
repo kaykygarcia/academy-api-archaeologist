@@ -3,7 +3,9 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { ENGINE_VERSION, inferContract } from '@api-archaeologist/core';
 import {
   db,
+  importSnapshots,
   storageError,
+  SnapshotInputError,
   saveSnapshot,
   listSnapshots,
   renameSnapshot,
@@ -106,9 +108,10 @@ describe('local snapshot store', () => {
   });
   it('rejects blank names and renaming a missing record', async () => {
     await expect(saveSnapshot({ name: ' ', contract })).rejects.toThrow('nome');
-    await expect(renameSnapshot('missing', 'New')).rejects.toThrow(
-      'não existe mais',
-    );
+    await expect(renameSnapshot('missing', 'New')).rejects.toMatchObject({
+      name: 'SnapshotInputError',
+      message: 'O snapshot não existe mais.',
+    });
   });
 });
 
@@ -123,4 +126,77 @@ it('maps plain and wrapped quota errors without misclassifying unknown errors', 
   expect(storageError(new Error('Unknown'))).toBe(
     'O armazenamento local de snapshots está indisponível ou a operação falhou. Verifique as permissões de armazenamento do navegador e o espaço disponível e tente novamente.',
   );
+});
+
+it('imports atomically and replaces missing, stored and repeated ids', async () => {
+  const saved = await saveSnapshot({ name: 'Existing', contract });
+  const { id, ...withoutId } = saved;
+  await importSnapshots([
+    { ...saved, name: 'Collision' },
+    { ...saved, id: 'fresh', name: 'First' },
+    { ...saved, id: 'fresh', name: 'Repeated' },
+    { ...withoutId, name: 'Missing' },
+  ]);
+  const records = await listSnapshots();
+  expect(records).toHaveLength(5);
+  expect(new Set(records.map((record) => record.id)).size).toBe(5);
+  expect(records.find((record) => record.name === 'Existing')?.id).toBe(id);
+  expect(records.find((record) => record.name === 'First')?.id).toBe('fresh');
+});
+
+it('rolls back the entire transaction if the second insert fails', async () => {
+  const saved = await saveSnapshot({ name: 'Existing', contract });
+  let inserts = 0;
+  const hook = () => {
+    if (++inserts === 2) throw new Error('Storage failure');
+  };
+  db.table('snapshots').hook('creating', hook);
+  try {
+    await expect(
+      importSnapshots([
+        { ...saved, id: 'new' },
+        { ...saved, id: 'second' },
+      ]),
+    ).rejects.toThrow();
+  } finally {
+    db.table('snapshots').hook('creating').unsubscribe(hook);
+  }
+  expect(await listSnapshots()).toEqual([saved]);
+});
+
+it('enforces import-compatible limits on every save and rename', async () => {
+  await expect(
+    saveSnapshot({ name: 'x'.repeat(201), contract }),
+  ).rejects.toThrow('até 200 caracteres');
+  await expect(
+    saveSnapshot({ name: 'Valid', method: 'x'.repeat(2001), contract }),
+  ).rejects.toThrow('até 2.000 caracteres');
+  await expect(
+    saveSnapshot({ name: 'Valid', endpoint: 'x'.repeat(2001), contract }),
+  ).rejects.toThrow('até 2.000 caracteres');
+  expect(await listSnapshots()).toEqual([]);
+  const saved = await saveSnapshot({
+    name: 'x'.repeat(200),
+    method: 'x'.repeat(2000),
+    endpoint: 'x'.repeat(2000),
+    contract,
+  });
+  await expect(renameSnapshot(saved.id, 'y'.repeat(201))).rejects.toThrow(
+    'até 200 caracteres',
+  );
+  expect(await listSnapshots()).toEqual([saved]);
+  await renameSnapshot(saved.id, 'y'.repeat(200));
+  expect((await listSnapshots())[0]?.name).toBe('y'.repeat(200));
+});
+
+it('distinguishes invalid snapshot input from storage failures', async () => {
+  await expect(
+    saveSnapshot({ name: 'x'.repeat(201), contract }),
+  ).rejects.toBeInstanceOf(SnapshotInputError);
+  await expect(
+    renameSnapshot('missing', 'x'.repeat(201)),
+  ).rejects.toBeInstanceOf(SnapshotInputError);
+  await expect(
+    saveSnapshot({ name: 'Valid', endpoint: 'x'.repeat(2001), contract }),
+  ).rejects.toBeInstanceOf(SnapshotInputError);
 });

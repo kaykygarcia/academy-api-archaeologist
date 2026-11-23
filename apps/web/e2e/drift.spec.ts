@@ -15,6 +15,7 @@ test('baseline to current reports exactly the five expected changes and severiti
     .getByRole('button', { name: 'Carregar novas observações', exact: true })
     .click();
   await expectSamples(page, 2);
+  await page.getByRole('tab', { name: 'Comparar', exact: true }).click();
   await page
     .getByRole('combobox', { name: 'Baseline', exact: true })
     .selectOption({ label: 'Orders baseline' });
@@ -22,6 +23,11 @@ test('baseline to current reports exactly the five expected changes and severiti
     .getByRole('combobox', { name: 'Novas observações', exact: true })
     .selectOption('current');
   await page.getByRole('button', { name: 'Comparar', exact: true }).click();
+  await expect(
+    page.getByLabel('Resumo da comparação', { exact: true }),
+  ).toHaveText(
+    '5 alterações · 2 potencialmente incompatíveis · 1 revisar · 2 informativas',
+  );
   const changes = page
     .getByRole('list', { name: /Alterações de drift:/ })
     .getByRole('listitem');

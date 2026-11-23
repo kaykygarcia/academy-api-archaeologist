@@ -25,6 +25,7 @@ test('pasted responses infer an optional field and copy the actual TypeScript', 
   await expect(page.getByRole('button', { name: /^coupon\?/ })).toContainText(
     'opcional',
   );
+  await page.getByRole('tab', { name: 'Código', exact: true }).click();
   await page.getByRole('button', { name: 'Copiar', exact: true }).click();
   await expect(
     page.getByRole('button', { name: 'Copiado', exact: true }),

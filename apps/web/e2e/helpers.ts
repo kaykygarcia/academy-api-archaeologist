@@ -53,18 +53,17 @@ export const test = base.extend<{ networkGuard: undefined }>({
 export { expect };
 
 export async function expectSamples(page: Page, count: number) {
-  const stats = page.getByRole('region', { name: 'Contrato inferido' });
   await expect(
-    stats
-      .locator('dl.stats > div')
-      .filter({ hasText: 'Amostras analisadas' })
-      .locator('dd'),
-  ).toHaveText(count.toLocaleString('pt-BR'));
+    page.getByLabel('Resumo do contrato', { exact: true }),
+  ).toContainText(
+    `${count.toLocaleString('pt-BR')} ${count === 1 ? 'amostra' : 'amostras'}`,
+  );
 }
 
 export async function loadExample(page: Page) {
   await page.goto('/');
   await page
+    .getByRole('navigation', { name: 'Ações principais' })
     .getByRole('button', { name: 'Carregar exemplo', exact: true })
     .click();
   await expectSamples(page, 3);
@@ -82,9 +81,10 @@ export async function saveBaseline(page: Page) {
     .fill('Orders baseline');
   await page.getByRole('button', { name: 'Salvar', exact: true }).click();
   await expect(
-    page
-      .getByRole('list', { name: 'Snapshots salvos', exact: true })
-      .getByText('Orders baseline', { exact: true }),
+    page.getByRole('button', { name: 'Salvar snapshot', exact: true }),
+  ).toBeFocused();
+  await expect(
+    page.getByRole('tab', { name: 'Snapshots (1)', exact: true }),
   ).toBeVisible();
 }
 

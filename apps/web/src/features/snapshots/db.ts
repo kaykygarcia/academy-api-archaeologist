@@ -2,6 +2,13 @@ import { formatDate } from '../../lib/format';
 import Dexie, { type Table } from 'dexie';
 import { ENGINE_VERSION, type InferredContract } from '@api-archaeologist/core';
 
+export class SnapshotInputError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'SnapshotInputError';
+  }
+}
+
 export type ContractSnapshot = {
   id: string;
   name: string;
@@ -41,7 +48,20 @@ export async function saveSnapshot(input: {
   contract: InferredContract;
 }): Promise<ContractSnapshot> {
   if (!input.name.trim())
-    throw new Error('É necessário informar um nome para o snapshot.');
+    throw new SnapshotInputError(
+      'É necessário informar um nome para o snapshot.',
+    );
+  if (input.name.length > 200)
+    throw new SnapshotInputError(
+      'O nome do snapshot deve ter até 200 caracteres.',
+    );
+  if (
+    (input.method?.length ?? 0) > 2000 ||
+    (input.endpoint?.length ?? 0) > 2000
+  )
+    throw new SnapshotInputError(
+      'Método e endpoint devem ter até 2.000 caracteres cada.',
+    );
   const record: ContractSnapshot = {
     id: crypto.randomUUID(),
     name: input.name.trim(),
@@ -63,9 +83,15 @@ export function listSnapshots(): Promise<ContractSnapshot[]> {
 
 export async function renameSnapshot(id: string, name: string) {
   if (!name.trim())
-    throw new Error('É necessário informar um nome para o snapshot.');
+    throw new SnapshotInputError(
+      'É necessário informar um nome para o snapshot.',
+    );
+  if (name.length > 200)
+    throw new SnapshotInputError(
+      'O nome do snapshot deve ter até 200 caracteres.',
+    );
   if (!(await snapshots.update(id, { name: name.trim() })))
-    throw new Error('O snapshot não existe mais.');
+    throw new SnapshotInputError('O snapshot não existe mais.');
 }
 
 export function deleteSnapshot(id: string) {
@@ -100,5 +126,40 @@ export function suggestedName(
 ): string {
   const today = new Date();
   const date = formatDate(today);
-  return `${[method, endpoint].filter(Boolean).join(' ') || dataset.replace(/ — \d{4}-\d{2}-\d{2}$/, '') || 'Conjunto sem nome'} — ${date}`;
+  const name = `${[method, endpoint].filter(Boolean).join(' ') || dataset.replace(/ — \d{4}-\d{2}-\d{2}$/, '') || 'Conjunto sem nome'} — ${date}`;
+  return Array.from(name).slice(0, 200).join('');
+}
+
+export async function importSnapshots(
+  records: (Omit<ContractSnapshot, 'id'> & { id?: string })[],
+): Promise<void> {
+  await db.transaction('rw', snapshots, async () => {
+    const used = new Set(await snapshots.toCollection().primaryKeys());
+    // Reserve all supplied ids before generating replacements, including later records.
+    const reserved = new Set(
+      records.flatMap((record) => (record.id === undefined ? [] : [record.id])),
+    );
+    const imported: ContractSnapshot[] = [];
+    for (const record of records) {
+      let id = record.id;
+      if (id === undefined || used.has(id)) {
+        do {
+          id = crypto.randomUUID();
+        } while (used.has(id) || reserved.has(id));
+      }
+      used.add(id);
+      imported.push({
+        id,
+        name: record.name,
+        method: record.method,
+        endpoint: record.endpoint,
+        createdAt: record.createdAt,
+        engineVersion: record.engineVersion,
+        schemaVersion: record.schemaVersion,
+        sampleCount: record.sampleCount,
+        contract: record.contract,
+      });
+    }
+    await snapshots.bulkAdd(imported);
+  });
 }

@@ -1,5 +1,6 @@
 import type {
   ContractChange,
+  AlignedRow,
   ContractSummary,
   InferredContract,
   SampleInput,
@@ -23,6 +24,6 @@ export type Request = Job & { id: number };
 export type Response = { id: number } & (
   | { phase: 'parsing' | 'inferring' | 'generating' }
   | { result: AnalysisResult }
-  | { changes: ContractChange[] }
+  | { changes: ContractChange[]; rows: AlignedRow[] }
   | { errors: string[]; validation?: boolean }
 );

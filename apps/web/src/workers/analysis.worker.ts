@@ -7,6 +7,7 @@ import {
   generateZod,
   generateJsonSchema,
   compareContracts,
+  alignContracts,
 } from '@api-archaeologist/core';
 import type { InferredContract } from '@api-archaeologist/core';
 import type { Request, Response } from '../lib/analysis-protocol';
@@ -41,9 +42,11 @@ self.onmessage = (event: MessageEvent<Request>) => {
   const { id } = request;
   try {
     if (request.type === 'compare') {
+      const changes = compareContracts(request.baseline, request.current);
       send({
         id,
-        changes: compareContracts(request.baseline, request.current),
+        changes,
+        rows: alignContracts(request.baseline, request.current, changes),
       });
     } else if (request.type === 'open') {
       generate(id, request.contract);

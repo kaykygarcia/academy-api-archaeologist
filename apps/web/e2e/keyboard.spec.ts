@@ -28,6 +28,6 @@ test('keyboard reaches tabs, switches them with arrows and analyzes with Enter',
   await page.keyboard.press('Enter');
   await expectSamples(page, 1);
   await expect(
-    page.getByRole('heading', { name: 'Contrato inferido', exact: true }),
+    page.getByLabel('Resumo do contrato', { exact: true }),
   ).toBeFocused();
 });

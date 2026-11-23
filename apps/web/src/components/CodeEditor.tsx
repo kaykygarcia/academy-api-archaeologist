@@ -1,25 +1,29 @@
 import { useEffect, useEffectEvent, useRef } from 'react';
 import { basicSetup, minimalSetup } from 'codemirror';
-import { Compartment, EditorState, Transaction } from '@codemirror/state';
-import { EditorView, lineNumbers } from '@codemirror/view';
+import { Compartment, EditorState, Prec, Transaction } from '@codemirror/state';
+import { EditorView, keymap, lineNumbers } from '@codemirror/view';
 import { json } from '@codemirror/lang-json';
 
 export type CodeEditorProps = {
   mode: 'input' | 'viewer';
   value: string;
+  onSubmit?: (analyze: boolean) => void;
   onChange?: (value: string) => void;
   readOnly?: boolean;
   language?: 'json' | 'typescript';
   label: string;
+  describedBy?: string;
 };
 
 export function CodeEditor({
   mode,
   value,
   onChange,
+  onSubmit,
   readOnly = false,
   language = 'json',
   label,
+  describedBy,
 }: CodeEditorProps) {
   const host = useRef<HTMLDivElement>(null);
   const editor = useRef<EditorView | null>(null);
@@ -29,6 +33,11 @@ export function CodeEditor({
   if (syntax.current === null) syntax.current = new Compartment();
   const initial = useEffectEvent(() => ({ value, readOnly }));
   const change = useEffectEvent((text: string) => onChange?.(text));
+  const submit = useEffectEvent((analyze: boolean) => {
+    if (readOnly || !onSubmit) return false;
+    onSubmit(analyze);
+    return true;
+  });
   const viewer = mode === 'viewer';
   useEffect(() => {
     if (!host.current || !access.current || !syntax.current) return;
@@ -39,6 +48,14 @@ export function CodeEditor({
         doc: start.value,
         extensions: [
           viewer ? [minimalSetup, lineNumbers()] : basicSetup,
+          viewer
+            ? []
+            : Prec.highest(
+                keymap.of([
+                  { key: 'Mod-Enter', run: () => submit(false) },
+                  { key: 'Mod-Shift-Enter', run: () => submit(true) },
+                ]),
+              ),
           EditorState.phrases.of({
             'Control character': 'Caractere de controle',
             'Selection deleted': 'Seleção excluída',
@@ -77,6 +94,7 @@ export function CodeEditor({
           ]),
           EditorView.contentAttributes.of({
             'aria-label': label,
+            ...(describedBy ? { 'aria-describedby': describedBy } : {}),
             tabindex: '0',
           }),
           EditorView.updateListener.of((update) => {
@@ -90,7 +108,7 @@ export function CodeEditor({
       view.destroy();
       editor.current = null;
     };
-  }, [viewer, label]);
+  }, [viewer, label, describedBy]);
   useEffect(() => {
     const compartment = syntax.current;
     if (!compartment) return;

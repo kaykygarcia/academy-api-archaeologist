@@ -12,8 +12,9 @@ test('saved contract survives reload and opens without raw samples', async ({
   await loadExample(page);
   await saveBaseline(page);
   await page.reload();
+  await page.getByRole('tab', { name: 'Snapshots (1)', exact: true }).click();
   const row = page
-    .getByRole('list', { name: 'Snapshots salvos', exact: true })
+    .getByRole('list', { name: /^Snapshots salvos \(\d+\)$/ })
     .getByRole('listitem')
     .filter({ hasText: 'Orders baseline' });
   await expect(row).toBeVisible();
@@ -31,7 +32,7 @@ test('saved contract survives reload and opens without raw samples', async ({
     'nullable',
   );
   await expect(
-    page.getByRole('button', { name: 'Copiar', exact: true }),
+    page.getByRole('button', { name: 'Exportar', exact: true }),
   ).toBeEnabled();
   await expect(
     page.getByRole('button', { name: 'Analisar amostras', exact: true }),

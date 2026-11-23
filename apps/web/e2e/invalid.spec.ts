@@ -19,9 +19,9 @@ test('invalid JSON names its sample and clears the previous contract', async ({
     page.getByRole('list', { name: 'Campos do contrato', exact: true }),
   ).toHaveCount(0);
   await expect(
-    page.getByRole('heading', { name: 'Um contrato começa com evidências.' }),
+    page.getByText('Adicione amostras e analise-as para examinar o contrato.'),
   ).toBeVisible();
   await expect(
-    page.getByRole('button', { name: 'Copiar', exact: true }),
-  ).toBeDisabled();
+    page.getByRole('button', { name: 'Exportar', exact: true }),
+  ).toHaveCount(0);
 });

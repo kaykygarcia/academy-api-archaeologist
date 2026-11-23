@@ -1,20 +1,26 @@
-import type { ContractSummary } from '@api-archaeologist/core';
+import type { Ref } from 'react';
+import { pluralize, type ContractSummary } from '@api-archaeologist/core';
 
-export function ContractStats({ summary }: { summary: ContractSummary }) {
+export function ContractStats({
+  summary,
+  summaryRef,
+}: {
+  summary: ContractSummary;
+  summaryRef: Ref<HTMLParagraphElement>;
+}) {
   return (
-    <dl className="stats">
-      <div>
-        <dt>Amostras analisadas</dt>
-        <dd>{summary.sampleCount.toLocaleString('pt-BR')}</dd>
-      </div>
-      <div>
-        <dt>Propriedades observadas</dt>
-        <dd>{summary.propertyPathCount.toLocaleString('pt-BR')}</dd>
-      </div>
-      <div>
-        <dt>Conflitos de tipo</dt>
-        <dd>{summary.conflictPathCount.toLocaleString('pt-BR')}</dd>
-      </div>
-    </dl>
+    <p
+      className="stats"
+      ref={summaryRef}
+      tabIndex={-1}
+      aria-label="Resumo do contrato"
+    >
+      {summary.sampleCount.toLocaleString('pt-BR')}{' '}
+      {pluralize(summary.sampleCount, 'amostra', 'amostras')} ·{' '}
+      {summary.propertyPathCount.toLocaleString('pt-BR')}{' '}
+      {pluralize(summary.propertyPathCount, 'propriedade', 'propriedades')} ·{' '}
+      {summary.conflictPathCount.toLocaleString('pt-BR')}{' '}
+      {pluralize(summary.conflictPathCount, 'conflito', 'conflitos')}
+    </p>
   );
 }

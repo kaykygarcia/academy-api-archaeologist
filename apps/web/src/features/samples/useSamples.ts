@@ -66,6 +66,18 @@ export function useSamples(report: (message: string) => void) {
 
   async function addFiles(files: File[]) {
     if (
+      files.some(
+        (file) =>
+          !file.name.toLowerCase().endsWith('.json') &&
+          file.type !== 'application/json',
+      )
+    ) {
+      report(
+        'Selecione apenas arquivos .json. Nenhuma amostra foi adicionada.',
+      );
+      return;
+    }
+    if (
       readingFiles.current ||
       !files.length ||
       !precheck(files.map((file) => ({ name: file.name, bytes: file.size })))

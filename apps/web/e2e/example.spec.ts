@@ -4,8 +4,8 @@ test('example exposes optional and nullable evidence from three responses', asyn
   page,
 }) => {
   await loadExample(page);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(
-    'Entenda sua API pelas evidências que ela deixa.',
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'API Archaeologist',
   );
   const coupon = page.getByRole('button', { name: /^coupon\?/ });
   await expect(coupon).toContainText('opcional');

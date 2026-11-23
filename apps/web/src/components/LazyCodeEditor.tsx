@@ -8,8 +8,10 @@ const Editor = lazy(() =>
 function PlainCode({
   value,
   label,
+  describedBy,
   mode,
   onChange,
+  onSubmit,
   readOnly,
 }: CodeEditorProps) {
   return (
@@ -18,8 +20,20 @@ function PlainCode({
         <textarea
           className="plain-code"
           aria-label={label}
+          aria-describedby={describedBy}
           value={value}
           readOnly={readOnly}
+          onKeyDown={(event) => {
+            if (
+              !readOnly &&
+              onSubmit &&
+              (event.ctrlKey || event.metaKey) &&
+              event.key === 'Enter'
+            ) {
+              event.preventDefault();
+              onSubmit(event.shiftKey);
+            }
+          }}
           onChange={(event) => onChange?.(event.target.value)}
         />
       ) : (

@@ -23,6 +23,7 @@ export function SaveSnapshotForm({
       <label>
         Nome do snapshot
         <input
+          maxLength={200}
           autoFocus
           value={name}
           onChange={(event) => setName(event.target.value)}
@@ -30,14 +31,22 @@ export function SaveSnapshotForm({
         />
       </label>
       <div className="actions">
-        <button className="primary" disabled={busy || !name.trim()}>
+        <button
+          className="primary"
+          disabled={busy || !name.trim()}
+          aria-describedby={!name.trim() ? 'save-name-reason' : undefined}
+        >
           Salvar
         </button>
         <button type="button" disabled={busy} onClick={onCancel}>
           Cancelar
         </button>
       </div>
-      {!name.trim() && <p className="note">Informe um nome antes de salvar.</p>}
+      {!name.trim() && (
+        <p className="note" id="save-name-reason">
+          Informe um nome antes de salvar.
+        </p>
+      )}
     </form>
   );
 }

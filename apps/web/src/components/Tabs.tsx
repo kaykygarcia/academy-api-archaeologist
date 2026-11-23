@@ -14,35 +14,16 @@ export function Tabs({
   children: ReactNode;
 }) {
   const id = useId();
-  const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   return (
     <>
-      <div className="tabs" role="tablist" aria-label={name}>
-        {labels.map((label, index) => (
-          <button
-            key={label}
-            ref={(node) => {
-              buttons.current[index] = node;
-            }}
-            id={`${id}-tab-${index}`}
-            role="tab"
-            aria-selected={index === active}
-            aria-controls={`${id}-panel`}
-            tabIndex={index === active ? 0 : -1}
-            onClick={() => onChange(index)}
-            onKeyDown={(event) => {
-              const next = nextTab(event.key, index, labels.length);
-              if (next !== null) {
-                event.preventDefault();
-                onChange(next);
-                buttons.current[next]?.focus();
-              }
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <TabList
+        id={id}
+        name={name}
+        labels={labels}
+        active={active}
+        onChange={onChange}
+        sharedPanel
+      />
       <div
         role="tabpanel"
         id={`${id}-panel`}
@@ -52,6 +33,79 @@ export function Tabs({
         {children}
       </div>
     </>
+  );
+}
+
+export function TabList({
+  id,
+  name,
+  labels,
+  active,
+  onChange,
+  sharedPanel = false,
+}: {
+  id: string;
+  sharedPanel?: boolean;
+  name: string;
+  labels: readonly string[];
+  active: number;
+  onChange: (index: number) => void;
+}) {
+  const buttons = useRef<(HTMLButtonElement | null)[]>([]);
+  return (
+    <div className="tabs" role="tablist" aria-label={name}>
+      {labels.map((label, index) => (
+        <button
+          key={index}
+          ref={(node) => {
+            buttons.current[index] = node;
+          }}
+          id={`${id}-tab-${index}`}
+          role="tab"
+          aria-selected={index === active}
+          aria-controls={sharedPanel ? `${id}-panel` : `${id}-panel-${index}`}
+          tabIndex={index === active ? 0 : -1}
+          onClick={() => {
+            onChange(index);
+            buttons.current[index]?.focus();
+          }}
+          onKeyDown={(event) => {
+            const next = nextTab(event.key, index, labels.length);
+            if (next !== null) {
+              event.preventDefault();
+              onChange(next);
+              buttons.current[next]?.focus();
+            }
+          }}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function TabPanel({
+  id,
+  index,
+  active,
+  children,
+}: {
+  id: string;
+  index: number;
+  active: number;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      role="tabpanel"
+      id={`${id}-panel-${index}`}
+      aria-labelledby={`${id}-tab-${index}`}
+      hidden={active !== index}
+      tabIndex={0}
+    >
+      {children}
+    </div>
   );
 }
 

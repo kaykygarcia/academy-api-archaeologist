@@ -5,15 +5,12 @@ import { LazyCodeEditor as CodeEditor } from '../../components/LazyCodeEditor';
 import { copyCode } from '../../lib/clipboard';
 import { downloadCode } from '../../lib/download';
 
-export const sharingWarning =
-  'Remova credenciais, dados pessoais e segredos antes de compartilhar capturas de tela ou exportações.';
-
 export function ExportPanel({
   result,
   dataset,
   report,
 }: {
-  result: AnalysisResult | null;
+  result: AnalysisResult;
   dataset: string;
   report: (message: string) => void;
 }) {
@@ -40,17 +37,14 @@ export function ExportPanel({
   }
   const formats = ['typescript', 'zod', 'jsonSchema'] as const;
   const format = formats[tab] ?? 'typescript';
-  const code = result?.[format] ?? '';
+  const code = result[format];
   const extensions = {
     typescript: '.ts',
     zod: '.zod.ts',
     jsonSchema: '.schema.json',
   };
   return (
-    <section className="section" aria-labelledby="export-heading">
-      <p className="eyebrow">02 / Leve com você</p>
-      <h2 id="export-heading">Exportar</h2>
-      <p className="note">{sharingWarning}</p>
+    <div className="code-panel">
       <Tabs
         name="Formato de exportação"
         labels={['TypeScript', 'Zod', 'JSON Schema']}
@@ -61,24 +55,14 @@ export function ExportPanel({
           setCopyError('');
         }}
       >
-        {result ? (
-          <CodeEditor
-            mode="viewer"
-            value={code}
-            readOnly
-            language={tab === 2 ? 'json' : 'typescript'}
-            label="Código gerado"
-          />
-        ) : (
-          <p className="empty">
-            Analise amostras ou abra um snapshot para gerar uma exportação.
-          </p>
-        )}
+        <CodeEditor
+          mode="viewer"
+          value={code}
+          readOnly
+          language={tab === 2 ? 'json' : 'typescript'}
+          label="Código gerado"
+        />
       </Tabs>
-      <p className="note">
-        Em JSON Schema, <code>required</code> significa “observado em todos os
-        objetos pai analisados”, não uma garantia sobre respostas futuras.
-      </p>
       <span className="sr-only" aria-live="polite" aria-atomic="true">
         {copyError ? 'Falha ao copiar' : copied === code ? 'Copiado' : ''}
         {(copyError || copied === code) && announcement % 2 === 1 && '\u00a0'}
@@ -86,7 +70,6 @@ export function ExportPanel({
       {copyError && <p className="error-text">{copyError}</p>}
       <div className="actions">
         <button
-          disabled={!result}
           onClick={async () => {
             const attempt = ++copyAttempt.current.id;
             const ok = await copyCode(code);
@@ -105,7 +88,6 @@ export function ExportPanel({
           {copied === code ? 'Copiado' : 'Copiar'}
         </button>
         <button
-          disabled={!result}
           onClick={() => {
             try {
               downloadCode(dataset, extensions[format], code);
@@ -118,6 +100,6 @@ export function ExportPanel({
           Baixar
         </button>
       </div>
-    </section>
+    </div>
   );
 }
