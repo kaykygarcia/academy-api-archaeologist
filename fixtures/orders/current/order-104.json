@@ -1,0 +1,7 @@
+{
+  "id": "104",
+  "status": "paid",
+  "customer": { "id": 10, "fullName": "Taylor" },
+  "items": [{ "sku": "SKU-2", "quantity": 1 }],
+  "currency": "BRL"
+}

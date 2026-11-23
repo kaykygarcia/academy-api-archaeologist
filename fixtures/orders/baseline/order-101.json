@@ -1,0 +1,7 @@
+{
+  "id": 101,
+  "status": "paid",
+  "coupon": "SAVE10",
+  "customer": { "id": 7, "name": "Morgan" },
+  "items": [{ "sku": "SKU-1", "quantity": 2 }]
+}

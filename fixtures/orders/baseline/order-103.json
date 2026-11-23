@@ -1,0 +1,6 @@
+{
+  "id": 103,
+  "status": "paid",
+  "customer": { "id": 9, "name": "Sam" },
+  "items": [{ "sku": "SKU-3", "quantity": 1 }]
+}

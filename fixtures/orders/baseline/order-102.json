@@ -1,0 +1,7 @@
+{
+  "id": 102,
+  "status": "pending",
+  "coupon": null,
+  "customer": { "id": 8, "name": "Alex" },
+  "items": []
+}
