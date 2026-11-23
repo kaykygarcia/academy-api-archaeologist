@@ -3,23 +3,24 @@
 A browser-only tool that infers TypeScript, Zod and JSON Schema contracts from multiple JSON responses, keeps the observed evidence, and compares contracts for drift. It runs locally in the browser without an API connection or backend.
 
 ![Contract and observed evidence](docs/screenshots/contract.png)
-![Comparison of baseline and new observations](docs/screenshots/drift.png)
+![Side-by-side comparison of baseline and new observations](docs/screenshots/drift.png)
 ![Mobile analysis and export](docs/screenshots/mobile.png)
 
 The interface is in Brazilian Portuguese (pt-BR).
 
 ## How it works
 
-1. Paste JSON responses, upload JSON files, or select `Carregar exemplo` to analyze the three fictional order fixtures. One document is one response sample, including a root array.
-2. Inspect the inferred fields and their evidence. In the example, `coupon` is shown as `Observado em 2/3 objetos pai` and has one null observation, making it optional and nullable for separate reasons.
-3. Copy or download TypeScript, Zod 4 or JSON Schema 2020-12 generated from the same contract tree.
-4. Save the baseline as a local snapshot, then select `Carregar novas observações`. Compare the saved baseline with `Análise atual` to see five changes, including an expanded `id` type and an unobserved `customer.name`.
+1. In `Contrato`, paste JSON responses, upload or drag and drop `.json` files onto the samples panel, or select `Carregar exemplo` to analyze the three fictional order fixtures. One document is one response sample, including a root array. In the editor, Ctrl/Cmd+Enter adds a sample; Ctrl/Cmd+Shift+Enter adds it and analyzes the samples.
+2. Inspect the inferred fields and their evidence. In the example, `coupon` is shown as `Observado em 2/3 objetos pai` and has one null observation, making it optional and nullable for separate reasons. Search the tree by property name or a path starting with `$`, such as `$.items[*].sku`. Matching ancestors remain visible. Expanded nodes render 200 children per batch, including search results, with a control to show more.
+3. Use the `Exportar` menu to copy or download TypeScript, Zod 4 or JSON Schema 2020-12 generated from the same contract tree. The `Código` view also provides a preview, copy and download controls.
+4. Save a baseline as a local snapshot, then load new observations. The example's `Salvar e carregar novas observações` action performs both steps and opens `Comparar`. Compare the saved baseline with `Análise atual` to see five changes, including an expanded `id` type and an unobserved `customer.name`. Inspect `Lista` or `Lado a lado`, use `Somente alterações` in the side-by-side view, and download the Markdown drift report.
+5. In `Snapshots`, open, compare, rename or delete saved snapshots, export all as JSON, or import a snapshot JSON file. Imported files are validated as untrusted input; invalid records are skipped with a report. The three app tabs preserve their mounted panels when switching views.
 
 ## Design decisions
 
-The core is pure TypeScript. A Web Worker runs parsing, inference, generation and comparison; React presents its output. Vite builds a static application, so neither an application server nor a remote database is needed. Dexie stores snapshots in IndexedDB only when explicitly saved.
+The core is pure TypeScript. A Web Worker runs parsing, inference, generation and comparison; React presents its output. Vite builds a static application, so neither an application server nor a remote database is needed. Dexie stores snapshots in IndexedDB when explicitly saved or imported.
 
-Tools such as quicktype already address type generation from JSON. This project's focus is preserving evidence across multiple samples and explaining observed drift. Presence is counted per parent object, nullability is separate from absence, and comparison labels describe potential consumer impact. The [architecture document](docs/architecture.md) walks through the real fixtures and engine outputs.
+Tools such as quicktype already address type generation from JSON. This project's focus is preserving evidence across multiple samples and explaining observed drift. Presence is counted per parent object, nullability is separate from absence, and comparison labels describe potential consumer impact.
 
 ## Privacy and security
 
@@ -33,7 +34,7 @@ Tools such as quicktype already address type generation from JSON. This project'
 
 Samples do not prove the full API contract. A field observed in every parent may still be optional in unseen responses, and no observed drift does not guarantee compatibility. The engine does not infer enums, formats or discriminated unions. Generated schemas allow additional properties. Browser storage may be cleared or evicted.
 
-Inputs are bounded to 200 samples, 5 MiB per sample, 20 MiB per session, depth 50 and 2,000,000 visited values. The [limitations document](docs/limitations.md) records validator edge cases, the measured artificial workloads and the CSP style exception.
+Inputs are bounded to 200 samples, 5 MiB per sample, 20 MiB per session, depth 50 and 2,000,000 visited values. The contract tree renders 200 children per batch; in one local measurement a sample with 50,000 properties at one level was painted about 0.9 s after Analyze, compared with 7.9 s before incremental rendering. Imported snapshot files are limited to 20 MiB and 500 records and are validated as untrusted input. The CSP allows inline styles because the code editor injects them.
 
 ## Local use
 
@@ -92,7 +93,7 @@ With `E2E_BASE_URL` set, Playwright does not launch a server. Each test rejects 
 
 ## Cloudflare Pages
 
-The application is deployed at https://academy-api-archaeologist.kaykygarcia.dev on Cloudflare Pages; see the [deployment record and verification checklist](docs/deploy-cloudflare-pages.md).
+The application is deployed at https://academy-api-archaeologist.kaykygarcia.dev on Cloudflare Pages, with build command `pnpm build` and output directory `apps/web/dist`. Pages reads Node from `.nvmrc` but ignores `packageManager`, so the project sets the environment variable `PNPM_VERSION=12.23.0`. Security headers come from `apps/web/public/_headers`. To check the live site, run `E2E_BASE_URL=https://academy-api-archaeologist.kaykygarcia.dev pnpm test:e2e`.
 
 ## License
 
@@ -102,10 +103,17 @@ The application is deployed at https://academy-api-archaeologist.kaykygarcia.dev
 
 - [Evidence model](packages/core/src/types.ts) and [inference](packages/core/src/inference.ts)
 - [Normalization and evidence counts](packages/core/src/normalization.ts)
-- [Contract comparison](packages/core/src/comparison.ts)
+- [Contract comparison](packages/core/src/comparison.ts), [aligned rows](packages/core/src/align.ts) and [drift labels](packages/core/src/labels.ts)
+- [Tree search](packages/core/src/search.ts), [contract validation](packages/core/src/validate.ts) and [own-field checks](packages/core/src/own.ts)
+- [Markdown drift report](packages/core/src/report.ts)
 - [Generators](packages/core/src/generators)
 - [Worker adapter](apps/web/src/workers/analysis.worker.ts)
-- [Snapshot storage](apps/web/src/features/snapshots/db.ts)
+- [App state and focus](apps/web/src/App.tsx) and [tabs](apps/web/src/components/Tabs.tsx)
+- [Sample input and drop zone](apps/web/src/features/samples/SamplesPanel.tsx)
+- [Contract toolbar](apps/web/src/features/contract/ContractSection.tsx), [incremental tree](apps/web/src/features/contract/ContractTree.tsx) and [export menu](apps/web/src/components/ExportMenu.tsx)
+- [Comparison panel](apps/web/src/features/comparison/ComparisonPanel.tsx) and [side-by-side view](apps/web/src/features/comparison/SideBySide.tsx)
+- [Snapshot transfer UI](apps/web/src/features/snapshots/SnapshotTransfer.tsx), [interchange validation](apps/web/src/features/snapshots/transfer.ts) and [storage](apps/web/src/features/snapshots/db.ts)
+- [Responsive styles](apps/web/src/styles/index.css)
 - [E2E specs](apps/web/e2e) and [Playwright configuration](apps/web/playwright.config.ts)
 - [Docker stages](Dockerfile) and [Nginx configuration](nginx.conf)
 - [Production headers](apps/web/public/_headers)

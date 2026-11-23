@@ -1,6 +1,6 @@
 # Project invariants
 
-Read `README.md`, `docs/architecture.md` and `docs/limitations.md` before implementation. Make no scope changes without approval. Record any deviation in the final report instead of faking a feature.
+Read `README.md` before implementation. Make no scope changes without approval. Record any deviation in the final report instead of faking a feature.
 
 - Keep core pure TypeScript, independent of DOM and React. Workers are thin adapters; UI never reimplements inference or counts.
 - Distinguish missing from null. Count presence per parent object occurrence; never present counts as probabilities.
