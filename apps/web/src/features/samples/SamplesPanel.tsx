@@ -29,26 +29,26 @@ export function SamplesPanel({
   } = state;
   return (
     <section className="panel" aria-labelledby="samples-heading">
-      <p className="eyebrow">01 / Workspace</p>
-      <h2 id="samples-heading">Samples</h2>
+      <p className="eyebrow">01 / Área de trabalho</p>
+      <h2 id="samples-heading">Amostras</h2>
       <label>
-        Dataset name
+        Nome do conjunto
         <input
           value={dataset}
           disabled={locked}
-          placeholder="Untitled dataset"
+          placeholder="Conjunto sem nome"
           onChange={(event) => setDataset(event.target.value)}
         />
       </label>
       <div className="metadata">
         <label>
-          Method (optional)
+          Método (opcional)
           <select
             value={method}
             disabled={locked}
             onChange={(event) => setMethod(event.target.value)}
           >
-            <option value="">Not specified</option>
+            <option value="">Não especificado</option>
             {['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'].map(
               (value) => (
                 <option key={value}>{value}</option>
@@ -57,7 +57,7 @@ export function SamplesPanel({
           </select>
         </label>
         <label>
-          Path (optional)
+          Endpoint (opcional)
           <input
             className="mono"
             placeholder="/orders/:id"
@@ -81,9 +81,9 @@ export function SamplesPanel({
           aria-describedby="analysis-reason"
           onClick={onAnalyze}
         >
-          Analyze samples
+          Analisar amostras
         </button>
-        {busy && <button onClick={onCancel}>Cancel</button>}
+        {busy && <button onClick={onCancel}>Cancelar</button>}
       </div>
       <p id="analysis-reason" className="note">
         {analysisReason(busy, reading, storageBusy, samples.length)}
@@ -98,9 +98,11 @@ function analysisReason(
   storageBusy: boolean,
   count: number,
 ): string {
-  if (busy) return 'Processing. Cancel to return to the previous result.';
-  if (reading) return 'Wait for the selected files to finish reading.';
-  if (storageBusy) return 'Wait for the snapshot operation to finish.';
-  if (!count) return 'Add at least one sample to enable analysis.';
-  return 'Ready to analyze. Results update only when analysis succeeds.';
+  if (busy) return 'Processando. Cancele para voltar ao resultado anterior.';
+  if (reading)
+    return 'Aguarde a conclusão da leitura dos arquivos selecionados.';
+  if (storageBusy) return 'Aguarde a conclusão da operação com o snapshot.';
+  if (!count)
+    return 'Adicione pelo menos uma amostra para habilitar a análise.';
+  return 'Pronto para analisar. Os resultados só são atualizados quando a análise é concluída com sucesso.';
 }

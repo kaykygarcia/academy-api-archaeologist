@@ -34,7 +34,7 @@ test('INF-10 visited values include roots and elements with exact boundary', () 
   ).toThrowError(
     expect.objectContaining({
       code: 'too-many-values',
-      message: expect.stringContaining('2000000'),
+      message: expect.stringContaining('2.000.000'),
     }),
   );
 });
@@ -56,7 +56,7 @@ test('INF-10 byte limits use UTF-8, including astral and unpaired surrogates', (
         {
           code: 'sample-too-large',
           name: 'sample.json',
-          message: 'Maximum sample size is 5 MiB in sample.json.',
+          message: 'O tamanho máximo da amostra é 5 MiB em sample.json.',
         },
       ],
     });
@@ -76,7 +76,10 @@ test('INF-10 byte limits use UTF-8, including astral and unpaired surrogates', (
   ).toMatchObject({
     ok: false,
     errors: [
-      { code: 'session-too-large', message: 'Maximum session size is 20 MiB.' },
+      {
+        code: 'session-too-large',
+        message: 'O tamanho máximo da sessão é 20 MiB.',
+      },
     ],
   });
 });
@@ -188,7 +191,7 @@ test('session overflow returns only its error and never parses samples', () => {
       errors: [
         {
           code: 'session-too-large',
-          message: 'Maximum session size is 20 MiB.',
+          message: 'O tamanho máximo da sessão é 20 MiB.',
         },
       ],
     });

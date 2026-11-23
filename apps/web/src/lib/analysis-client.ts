@@ -30,7 +30,7 @@ export function useAnalysis(
       sequence.current++;
       setBusy(false);
       handlers.current.onFailure(
-        'The analysis worker failed. Try analyzing again.',
+        'Falha no processamento da análise. Tente analisar novamente.',
       );
     }
     instance.onerror = failed;
@@ -56,7 +56,7 @@ export function useAnalysis(
       worker.current = null;
       setBusy(false);
       handlers.current.onFailure(
-        'The operation could not be sent to the analysis worker. Try again.',
+        'Não foi possível enviar a operação para processamento. Tente novamente.',
       );
     }
   }
@@ -70,7 +70,7 @@ export function useAnalysis(
       return true;
     } catch {
       handlers.current.onFailure(
-        'The analysis worker could not restart. Try analyzing again.',
+        'Não foi possível reiniciar o processamento. Tente analisar novamente.',
         true,
       );
       return false;

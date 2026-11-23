@@ -21,7 +21,7 @@ export function SaveSnapshotForm({
       }}
     >
       <label>
-        Snapshot name
+        Nome do snapshot
         <input
           autoFocus
           value={name}
@@ -31,13 +31,13 @@ export function SaveSnapshotForm({
       </label>
       <div className="actions">
         <button className="primary" disabled={busy || !name.trim()}>
-          Save
+          Salvar
         </button>
         <button type="button" disabled={busy} onClick={onCancel}>
-          Cancel
+          Cancelar
         </button>
       </div>
-      {!name.trim() && <p className="note">Enter a name before saving.</p>}
+      {!name.trim() && <p className="note">Informe um nome antes de salvar.</p>}
     </form>
   );
 }

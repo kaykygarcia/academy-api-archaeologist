@@ -61,11 +61,14 @@ export function inferContract(samples: readonly JsonValue[]): InferredContract {
   const { MAX_SAMPLES, MAX_DEPTH, MAX_VISITED_VALUES } = LIMITS;
   const segments: (string | null)[] = [];
   if (samples.length === 0)
-    throw new InferenceError('no-samples', 'At least 1 sample is required.');
+    throw new InferenceError(
+      'no-samples',
+      'É necessária pelo menos 1 amostra.',
+    );
   if (samples.length > MAX_SAMPLES)
     throw new InferenceError(
       'too-many-samples',
-      `Maximum sample count is ${MAX_SAMPLES}.`,
+      `O número máximo de amostras é ${MAX_SAMPLES}.`,
     );
   let visited = 0;
   function observe(
@@ -77,7 +80,7 @@ export function inferContract(samples: readonly JsonValue[]): InferredContract {
       const path = pathFromSegments(segments);
       throw new InferenceError(
         'depth-exceeded',
-        `Maximum depth is ${MAX_DEPTH} at ${path}.`,
+        `A profundidade máxima é ${MAX_DEPTH} em ${path}.`,
         { path },
       );
     }
@@ -85,7 +88,7 @@ export function inferContract(samples: readonly JsonValue[]): InferredContract {
       const path = pathFromSegments(segments);
       throw new InferenceError(
         'too-many-values',
-        `Maximum visited values is ${MAX_VISITED_VALUES} at ${path}.`,
+        `O número máximo de valores visitados é ${MAX_VISITED_VALUES.toLocaleString('pt-BR')} em ${path}.`,
         { path },
       );
     }

@@ -35,7 +35,7 @@ function TreeRow({
         {children && (
           <button
             className="disclosure"
-            aria-label={`${expanded ? 'Collapse' : 'Expand'} ${field.path}`}
+            aria-label={`${expanded ? 'Recolher' : 'Expandir'} ${field.path}`}
             aria-expanded={expanded}
             onClick={() => setExpanded(!expanded)}
           >
@@ -52,10 +52,10 @@ function TreeRow({
             {optional ? '?' : ''}
           </code>
           <span className="type">{describeType(field.value)}</span>
-          {optional && <span className="badge">optional</span>}
+          {optional && <span className="badge">opcional</span>}
           {isNullable(field.value) && <span className="badge">nullable</span>}
           {hasTypeConflict(field.value) && (
-            <span className="badge review">conflict</span>
+            <span className="badge review">conflito</span>
           )}
         </button>
       </div>
@@ -105,7 +105,7 @@ export function ContractTree({ contract }: { contract: InferredContract }) {
   return (
     <>
       <div className="tree">
-        <ul aria-label="Contract fields">
+        <ul aria-label="Campos do contrato">
           <TreeRow
             name="$"
             field={{ path: '$', value: contract.root }}

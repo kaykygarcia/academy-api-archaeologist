@@ -13,24 +13,27 @@ test('saved contract survives reload and opens without raw samples', async ({
   await saveBaseline(page);
   await page.reload();
   const row = page
-    .getByRole('list', { name: 'Saved snapshots', exact: true })
+    .getByRole('list', { name: 'Snapshots salvos', exact: true })
     .getByRole('listitem')
     .filter({ hasText: 'Orders baseline' });
   await expect(row).toBeVisible();
-  await row.getByRole('button', { name: 'Open', exact: true }).click();
+  await row.getByRole('button', { name: 'Abrir', exact: true }).click();
   await expectSamples(page, 3);
   await expect(
-    page.getByText('Opened from snapshot — original samples are not stored', {
-      exact: true,
-    }),
+    page.getByText(
+      'Aberto a partir de um snapshot — as amostras originais não são armazenadas',
+      {
+        exact: true,
+      },
+    ),
   ).toBeVisible();
   await expect(page.getByRole('button', { name: /^coupon\?/ })).toContainText(
     'nullable',
   );
   await expect(
-    page.getByRole('button', { name: 'Copy', exact: true }),
+    page.getByRole('button', { name: 'Copiar', exact: true }),
   ).toBeEnabled();
   await expect(
-    page.getByRole('button', { name: 'Analyze samples', exact: true }),
+    page.getByRole('button', { name: 'Analisar amostras', exact: true }),
   ).toBeDisabled();
 });

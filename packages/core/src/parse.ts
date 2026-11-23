@@ -17,7 +17,7 @@ function jsonError(input: SampleInput, error: unknown): SampleError {
   const result: SampleError = {
     name: input.name,
     code: 'invalid-json',
-    message: `Invalid JSON in ${input.name}. Fix the sample and try again.`,
+    message: `JSON inválido em ${input.name}. Corrija a amostra e tente novamente.`,
   };
   // Engine messages can quote sample content, so only retain their location.
   if (position !== undefined) {
@@ -29,7 +29,7 @@ function jsonError(input: SampleInput, error: unknown): SampleError {
     result.column = Number(location[2]);
   }
   if (error instanceof RangeError)
-    result.message = `JSON nesting in ${input.name} exceeds parser capacity; maximum inference depth is ${LIMITS.MAX_DEPTH}.`;
+    result.message = `O aninhamento JSON em ${input.name} excede a capacidade de interpretação; a profundidade máxima de inferência é ${LIMITS.MAX_DEPTH}.`;
   return result;
 }
 
@@ -41,7 +41,7 @@ export function parseSamples(inputs: readonly SampleInput[]): ParseResult {
         {
           name: '',
           code: 'no-samples',
-          message: 'At least 1 sample is required.',
+          message: 'É necessária pelo menos 1 amostra.',
         },
       ],
     };
@@ -52,7 +52,7 @@ export function parseSamples(inputs: readonly SampleInput[]): ParseResult {
         {
           name: '',
           code: 'too-many-samples',
-          message: `Maximum sample count is ${LIMITS.MAX_SAMPLES}.`,
+          message: `O número máximo de amostras é ${LIMITS.MAX_SAMPLES}.`,
         },
       ],
     };
@@ -71,7 +71,7 @@ export function parseSamples(inputs: readonly SampleInput[]): ParseResult {
         {
           name: '',
           code: 'session-too-large',
-          message: `Maximum session size is ${formatMiB(LIMITS.MAX_SESSION_BYTES)}.`,
+          message: `O tamanho máximo da sessão é ${formatMiB(LIMITS.MAX_SESSION_BYTES)}.`,
         },
       ],
     };
@@ -81,7 +81,7 @@ export function parseSamples(inputs: readonly SampleInput[]): ParseResult {
       errors.push({
         name: input.name,
         code: 'sample-too-large',
-        message: `Maximum sample size is ${formatMiB(LIMITS.MAX_SAMPLE_BYTES)} in ${input.name}.`,
+        message: `O tamanho máximo da amostra é ${formatMiB(LIMITS.MAX_SAMPLE_BYTES)} em ${input.name}.`,
       });
       continue;
     }

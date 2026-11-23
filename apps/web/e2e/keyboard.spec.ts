@@ -4,30 +4,30 @@ test('keyboard reaches tabs, switches them with arrows and analyzes with Enter',
   page,
 }) => {
   await page.goto('/');
-  const paste = page.getByRole('tab', { name: 'Paste JSON' });
+  const paste = page.getByRole('tab', { name: 'Colar JSON' });
   await tabTo(page, paste);
   await page.keyboard.press('ArrowRight');
-  const upload = page.getByRole('tab', { name: 'Upload files' });
+  const upload = page.getByRole('tab', { name: 'Enviar arquivos' });
   await expect(upload).toBeFocused();
   await expect(upload).toHaveAttribute('aria-selected', 'true');
   await page.keyboard.press('ArrowLeft');
   await expect(paste).toBeFocused();
   await expect(paste).toHaveAttribute('aria-selected', 'true');
-  const editor = page.getByLabel('JSON sample', { exact: true });
+  const editor = page.getByLabel('Amostra JSON', { exact: true });
   await tabTo(page, editor);
   await page.keyboard.insertText('{"id":1}');
   await tabTo(
     page,
-    page.getByRole('button', { name: 'Add sample', exact: true }),
+    page.getByRole('button', { name: 'Adicionar amostra', exact: true }),
   );
   await page.keyboard.press('Enter');
   await tabTo(
     page,
-    page.getByRole('button', { name: 'Analyze samples', exact: true }),
+    page.getByRole('button', { name: 'Analisar amostras', exact: true }),
   );
   await page.keyboard.press('Enter');
   await expectSamples(page, 1);
   await expect(
-    page.getByRole('heading', { name: 'Inferred contract', exact: true }),
+    page.getByRole('heading', { name: 'Contrato inferido', exact: true }),
   ).toBeFocused();
 });

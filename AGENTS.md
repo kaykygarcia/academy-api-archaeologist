@@ -12,4 +12,4 @@ Read `README.md`, `docs/architecture.md` and `docs/limitations.md` before implem
 - Every visible control must work. No hardcoded results or invented metrics.
 - Pin exact dependency versions; add no dependencies without approval. Codex must not run network installs because Codex has no network; Claude performs installs.
 - Do not commit or run destructive Docker commands such as `down -v` or `system prune`.
-- Keep code, UI and repository documentation in English; communicate with the maintainer in Brazilian Portuguese.
+- Keep code, identifiers, comments, generated code and repository documentation in English. All user-visible text, including core messages and drift explanations, is in Brazilian Portuguese. Communicate with the maintainer in Brazilian Portuguese.

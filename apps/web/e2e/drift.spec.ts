@@ -12,55 +12,55 @@ test('baseline to current reports exactly the five expected changes and severiti
   await loadExample(page);
   await saveBaseline(page);
   await page
-    .getByRole('button', { name: 'Load new observations', exact: true })
+    .getByRole('button', { name: 'Carregar novas observações', exact: true })
     .click();
   await expectSamples(page, 2);
   await page
     .getByRole('combobox', { name: 'Baseline', exact: true })
     .selectOption({ label: 'Orders baseline' });
   await page
-    .getByRole('combobox', { name: 'New observations', exact: true })
+    .getByRole('combobox', { name: 'Novas observações', exact: true })
     .selectOption('current');
-  await page.getByRole('button', { name: 'Compare', exact: true }).click();
+  await page.getByRole('button', { name: 'Comparar', exact: true }).click();
   const changes = page
-    .getByRole('list', { name: /Drift changes:/ })
+    .getByRole('list', { name: /Alterações de drift:/ })
     .getByRole('listitem');
   await expect(changes).toHaveCount(5);
   const expected = [
     {
       path: '$.coupon',
-      label: 'Type narrowed',
-      severity: 'Review',
+      label: 'Tipo restringido',
+      severity: 'Revisar',
       transition: 'string | null → null',
-      explanation: /narrower/i,
+      explanation: /mais restrita/i,
     },
     {
       path: '$.currency',
-      label: 'Added',
-      severity: 'Informational',
-      transition: 'Not observed → string',
-      explanation: /added|new/i,
+      label: 'Adicionado',
+      severity: 'Informativo',
+      transition: 'Não observado → string',
+      explanation: /Nova propriedade/i,
     },
     {
       path: '$.customer.fullName',
-      label: 'Added',
-      severity: 'Informational',
-      transition: 'Not observed → string',
-      explanation: /added|new/i,
+      label: 'Adicionado',
+      severity: 'Informativo',
+      transition: 'Não observado → string',
+      explanation: /Nova propriedade/i,
     },
     {
       path: '$.customer.name',
-      label: 'Not observed',
-      severity: 'Potentially breaking',
-      transition: 'string → Not observed',
-      explanation: /not observed/i,
+      label: 'Não observado',
+      severity: 'Potencialmente incompatível',
+      transition: 'string → Não observado',
+      explanation: /não observada/i,
     },
     {
       path: '$.id',
-      label: 'Type expanded',
-      severity: 'Potentially breaking',
+      label: 'Tipo ampliado',
+      severity: 'Potencialmente incompatível',
       transition: 'number → string | number',
-      explanation: /Non-null kinds gained: string/i,
+      explanation: /Novos tipos não nulos: string/i,
     },
   ];
   for (const change of expected) {

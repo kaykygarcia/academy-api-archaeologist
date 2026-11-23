@@ -42,35 +42,37 @@ export const test = base.extend<{ networkGuard: undefined }>({
 export { expect };
 
 export async function expectSamples(page: Page, count: number) {
-  const stats = page.getByRole('region', { name: 'Inferred contract' });
+  const stats = page.getByRole('region', { name: 'Contrato inferido' });
   await expect(
     stats
       .locator('dl.stats > div')
-      .filter({ hasText: 'Samples analyzed' })
+      .filter({ hasText: 'Amostras analisadas' })
       .locator('dd'),
-  ).toHaveText(String(count));
+  ).toHaveText(count.toLocaleString('pt-BR'));
 }
 
 export async function loadExample(page: Page) {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Load example', exact: true }).click();
+  await page
+    .getByRole('button', { name: 'Carregar exemplo', exact: true })
+    .click();
   await expectSamples(page, 3);
   await expect(
-    page.getByRole('list', { name: 'Contract fields', exact: true }),
+    page.getByRole('list', { name: 'Campos do contrato', exact: true }),
   ).toBeVisible();
 }
 
 export async function saveBaseline(page: Page) {
   await page
-    .getByRole('button', { name: 'Save snapshot', exact: true })
+    .getByRole('button', { name: 'Salvar snapshot', exact: true })
     .click();
   await page
-    .getByLabel('Snapshot name', { exact: true })
+    .getByLabel('Nome do snapshot', { exact: true })
     .fill('Orders baseline');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Salvar', exact: true }).click();
   await expect(
     page
-      .getByRole('list', { name: 'Saved snapshots', exact: true })
+      .getByRole('list', { name: 'Snapshots salvos', exact: true })
       .getByText('Orders baseline', { exact: true }),
   ).toBeVisible();
 }

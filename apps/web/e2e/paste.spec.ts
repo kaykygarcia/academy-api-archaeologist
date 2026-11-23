@@ -9,21 +9,25 @@ test('pasted responses infer an optional field and copy the actual TypeScript', 
     origin: baseURL,
   });
   await page.goto('/');
-  const editor = page.getByLabel('JSON sample', { exact: true });
+  const editor = page.getByLabel('Amostra JSON', { exact: true });
   await editor.fill('{"id":1,"coupon":"SAMPLE"}');
-  await page.getByRole('button', { name: 'Add sample', exact: true }).click();
-  await editor.fill('{"id":2}');
-  await page.getByRole('button', { name: 'Add sample', exact: true }).click();
   await page
-    .getByRole('button', { name: 'Analyze samples', exact: true })
+    .getByRole('button', { name: 'Adicionar amostra', exact: true })
+    .click();
+  await editor.fill('{"id":2}');
+  await page
+    .getByRole('button', { name: 'Adicionar amostra', exact: true })
+    .click();
+  await page
+    .getByRole('button', { name: 'Analisar amostras', exact: true })
     .click();
   await expectSamples(page, 2);
   await expect(page.getByRole('button', { name: /^coupon\?/ })).toContainText(
-    'optional',
+    'opcional',
   );
-  await page.getByRole('button', { name: 'Copy', exact: true }).click();
+  await page.getByRole('button', { name: 'Copiar', exact: true }).click();
   await expect(
-    page.getByRole('button', { name: 'Copied', exact: true }),
+    page.getByRole('button', { name: 'Copiado', exact: true }),
   ).toBeVisible();
   const copied = await page.evaluate(() => navigator.clipboard.readText());
   expect(copied).toBe(

@@ -1,3 +1,4 @@
+import { pluralize } from '@api-archaeologist/core';
 import { useRef, useState } from 'react';
 import { formatDateTime } from '../../lib/format';
 import { isCompatibleSnapshot, type ContractSnapshot } from './db';
@@ -33,11 +34,13 @@ function SnapshotRow({
         <strong>{snapshot.name}</strong>
         <small>
           {formatDateTime(new Date(snapshot.createdAt))} ·{' '}
-          {snapshot.sampleCount} samples
+          {snapshot.sampleCount.toLocaleString('pt-BR')}{' '}
+          {pluralize(snapshot.sampleCount, 'amostra', 'amostras')}
         </small>
         {!compatible && (
           <p className="error-text">
-            Incompatible snapshot version. Opening and comparison are blocked.
+            Versão incompatível do snapshot. A abertura e a comparação estão
+            bloqueadas.
           </p>
         )}
       </div>
@@ -50,7 +53,7 @@ function SnapshotRow({
           }}
         >
           <label>
-            New name
+            Novo nome
             <input
               autoFocus
               value={name}
@@ -58,14 +61,14 @@ function SnapshotRow({
               onChange={(event) => setName(event.target.value)}
             />
           </label>
-          <button disabled={disabled || !name.trim()}>Save name</button>
+          <button disabled={disabled || !name.trim()}>Salvar nome</button>
           <button type="button" disabled={disabled} onClick={closeForm}>
-            Cancel
+            Cancelar
           </button>
         </form>
       ) : mode === 'delete' ? (
         <div className="actions">
-          <span>Delete?</span>
+          <span>Excluir?</span>
           <button
             disabled={disabled}
             onClick={async () => {
@@ -75,10 +78,10 @@ function SnapshotRow({
               }
             }}
           >
-            Confirm
+            Confirmar
           </button>
           <button disabled={disabled} onClick={closeForm}>
-            Cancel
+            Cancelar
           </button>
         </div>
       ) : (
@@ -87,7 +90,7 @@ function SnapshotRow({
             disabled={disabled || !compatible}
             onClick={() => onOpen(snapshot)}
           >
-            Open
+            Abrir
           </button>
           <button
             disabled={disabled}
@@ -97,14 +100,14 @@ function SnapshotRow({
               setMode('rename');
             }}
           >
-            Rename
+            Renomear
           </button>
           <button
             ref={deleteButton}
             disabled={disabled}
             onClick={() => setMode('delete')}
           >
-            Delete
+            Excluir
           </button>
         </div>
       )}
@@ -128,7 +131,7 @@ export function SnapshotList(props: {
     </ul>
   ) : (
     <p className="empty compact">
-      No saved snapshots. Save a contract to establish a baseline.
+      Nenhum snapshot salvo. Salve um contrato para estabelecer um baseline.
     </p>
   );
 }

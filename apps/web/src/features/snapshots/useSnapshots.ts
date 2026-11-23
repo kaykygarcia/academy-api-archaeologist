@@ -27,7 +27,7 @@ export function useSnapshots(
       setStorageMessage('');
     } catch (error) {
       setStorageMessage(
-        `Could not refresh the snapshot list. ${storageError(error)}`,
+        `Não foi possível atualizar a lista de snapshots. ${storageError(error)}`,
       );
     }
   }

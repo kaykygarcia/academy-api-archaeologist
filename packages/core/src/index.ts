@@ -26,3 +26,5 @@ export { generateTypeScript } from './generators/typescript';
 export { generateZod } from './generators/zod';
 
 export { generateJsonSchema } from './generators/json-schema';
+
+export { pluralize } from './pluralize';

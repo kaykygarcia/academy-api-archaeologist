@@ -1,4 +1,4 @@
-import type { SampleInput } from '@api-archaeologist/core';
+import { pluralize, type SampleInput } from '@api-archaeologist/core';
 
 export type SessionSample = SampleInput & { id: string; bytes: number };
 
@@ -14,7 +14,8 @@ export function SampleList({
   if (!samples.length)
     return (
       <p className="empty compact">
-        No samples yet. Paste a response, upload JSON files or load the example.
+        Ainda não há amostras. Cole uma resposta, envie arquivos JSON ou
+        carregue o exemplo.
       </p>
     );
   return (
@@ -23,14 +24,17 @@ export function SampleList({
         <li key={sample.id}>
           <span>
             <strong>{sample.name}</strong>
-            <small>{sample.bytes.toLocaleString()} bytes</small>
+            <small>
+              {sample.bytes.toLocaleString('pt-BR')}{' '}
+              {pluralize(sample.bytes, 'byte', 'bytes')}
+            </small>
           </span>
           <button
             disabled={disabled}
-            aria-label={`Remove ${sample.name}`}
+            aria-label={`Remover ${sample.name}`}
             onClick={() => onRemove(sample.id)}
           >
-            Remove
+            Remover
           </button>
         </li>
       ))}

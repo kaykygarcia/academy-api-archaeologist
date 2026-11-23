@@ -15,5 +15,5 @@ it('replaces a trailing snapshot date without accumulating suffixes', () => {
   expect(suggestedName('Orders — 2025-12-31', 'GET', '/orders')).toBe(
     'GET /orders — 2026-01-02',
   );
-  expect(suggestedName('', '', '')).toBe('Untitled dataset — 2026-01-02');
+  expect(suggestedName('', '', '')).toBe('Conjunto sem nome — 2026-01-02');
 });

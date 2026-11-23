@@ -183,16 +183,14 @@ for (const entry of cases)
 test('DIF-02 absence explanation limits claims and includes parent evidence', () => {
   const changes = diff([{ a: 1 }, { a: 2 }, { a: 3 }], [{}, {}]);
   expect(changes[0]?.explanation).toContain(
-    'not observed in the new samples; it may have been removed or the samples may not cover the case',
+    'não observada nas novas amostras; pode ter sido removida ou as amostras podem não cobrir o caso',
   );
-  expect(changes[0]?.explanation).toContain(
-    '3/3 parent objects in the baseline, 0/2',
-  );
+  expect(changes[0]?.explanation).toContain('3/3 objetos pai no baseline, 0/2');
 });
 
 test('presence increase does not prove requiredness', () => {
   expect(diff([{ a: 1 }, {}], [{ a: 2 }])[0]?.explanation).toContain(
-    'does not prove it is now required',
+    'não comprova que a propriedade agora é obrigatória',
   );
 });
 
@@ -204,14 +202,12 @@ test('DIF-05 nested presence uses item occurrences, not sample count', () => {
   expect(changes).toHaveLength(1);
   expect(changes[0]).toMatchObject({
     path: '$.items[*].a',
-    previous: '3/3 parent objects',
-    current: '1/2 parent objects',
+    previous: '3/3 objetos pai',
+    current: '1/2 objetos pai',
     code: 'presence-reduced',
     severity: 'potentially-breaking',
   });
-  expect(changes[0]?.explanation).toContain(
-    '3/3 parent objects in the baseline, 1/2',
-  );
+  expect(changes[0]?.explanation).toContain('3/3 objetos pai no baseline, 1/2');
 });
 
 test('DIF-04 no false positives from order, duplicates, counts or string values', () => {
@@ -273,7 +269,7 @@ test('spec example produces exactly five stable changes in output order', () => 
       {
         "code": "type-narrowed",
         "current": "null",
-        "explanation": "Non-null kinds not observed: string. A narrower observation does not prove the previous behaviour was removed. Baseline: string 1, null 1. New samples: null 1.",
+        "explanation": "Tipos não nulos não observados: string. Uma observação mais restrita não comprova que o comportamento anterior foi removido. Baseline: string 1, null 1. Novas amostras: null 1.",
         "path": "$.coupon",
         "previous": "string | null",
         "severity": "review",
@@ -281,7 +277,7 @@ test('spec example produces exactly five stable changes in output order', () => 
       {
         "code": "property-added",
         "current": "string",
-        "explanation": "New property observed. Observed in 0/3 parent objects in the baseline, 1/2 parent objects in the new samples.",
+        "explanation": "Nova propriedade observada. Observado em 0/3 objetos pai no baseline, 1/2 objetos pai nas novas amostras.",
         "path": "$.currency",
         "previous": null,
         "severity": "informational",
@@ -289,7 +285,7 @@ test('spec example produces exactly five stable changes in output order', () => 
       {
         "code": "property-added",
         "current": "string",
-        "explanation": "New property observed. Observed in 0/3 parent objects in the baseline, 2/2 parent objects in the new samples.",
+        "explanation": "Nova propriedade observada. Observado em 0/3 objetos pai no baseline, 2/2 objetos pai nas novas amostras.",
         "path": "$.customer.fullName",
         "previous": null,
         "severity": "informational",
@@ -297,7 +293,7 @@ test('spec example produces exactly five stable changes in output order', () => 
       {
         "code": "property-not-observed",
         "current": null,
-        "explanation": "Property not observed in the new samples; it may have been removed or the samples may not cover the case. Observed in 3/3 parent objects in the baseline, 0/2 parent objects in the new samples.",
+        "explanation": "Propriedade não observada nas novas amostras; pode ter sido removida ou as amostras podem não cobrir o caso. Observado em 3/3 objetos pai no baseline, 0/2 objetos pai nas novas amostras.",
         "path": "$.customer.name",
         "previous": "string",
         "severity": "potentially-breaking",
@@ -305,7 +301,7 @@ test('spec example produces exactly five stable changes in output order', () => 
       {
         "code": "type-expanded",
         "current": "string | number",
-        "explanation": "Non-null kinds gained: string. Baseline: number 3. New samples: string 1, number 1.",
+        "explanation": "Novos tipos não nulos: string. Baseline: number 3. Novas amostras: string 1, number 1.",
         "path": "$.id",
         "previous": "number",
         "severity": "potentially-breaking",
@@ -320,12 +316,32 @@ test('type evidence names gained and lost kinds when both occur', () => {
   expect(changes[0]).toMatchObject({
     code: 'type-expanded',
     explanation:
-      'Non-null kinds gained: boolean. Non-null kinds not observed: string. Baseline: string 1, number 1. New samples: number 1, boolean 1.',
+      'Novos tipos não nulos: boolean. Tipos não nulos não observados: string. Baseline: string 1, number 1. Novas amostras: number 1, boolean 1.',
   });
 });
 
 test('narrowing evidence includes each observed kind count on both sides', () => {
   expect(diff(['x', null], [null])[0]?.explanation).toBe(
-    'Non-null kinds not observed: string. A narrower observation does not prove the previous behaviour was removed. Baseline: string 1, null 1. New samples: null 1.',
+    'Tipos não nulos não observados: string. Uma observação mais restrita não comprova que o comportamento anterior foi removido. Baseline: string 1, null 1. Novas amostras: null 1.',
+  );
+});
+
+test('null evidence uses singular and plural occurrences', () => {
+  expect(diff([null], ['x'])[1]?.explanation).toBe(
+    'Null observado 1/1 vez no baseline, 0/1 vezes nas novas amostras; isso não comprova que null deixou de ser possível.',
+  );
+  expect(diff(['x'], [null, null])[1]?.explanation).toBe(
+    'Null observado 0/1 vezes no baseline, 2/2 vezes nas novas amostras.',
+  );
+});
+
+test('array evidence preserves counts and uses singular and plural forms', () => {
+  expect(diff([[1]], [[], []])[0]?.explanation).toBe(
+    'Contagem: 1 elemento em 1 array no baseline, 0 elementos em 2 arrays nas novas amostras.',
+  );
+  expect(
+    diff([[]], [Array.from({ length: 1000 }, () => 1)])[0]?.explanation,
+  ).toBe(
+    'Contagem: 0 elementos em 1 array no baseline, 1.000 elementos em 1 array nas novas amostras.',
   );
 });

@@ -4,6 +4,8 @@ import { sanitizeFilename } from './download';
 describe('download filename prefix', () => {
   it.each([
     ['Orders example', 'orders-example'],
+    ['Requisições de pedidos', 'requisicoes-de-pedidos'],
+    ['Requisições de pedidos'.normalize('NFD'), 'requisicoes-de-pedidos'],
     ['../../GET /orders/:id', 'get-orders-id'],
     ['<script>hello</script>', 'script-hello-script'],
     ['', 'api-response'],

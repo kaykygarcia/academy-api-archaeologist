@@ -5,33 +5,33 @@ import type {
 } from '@api-archaeologist/core';
 
 const changeLabels: Record<ChangeCode, string> = {
-  'property-added': 'Added',
-  'property-not-observed': 'Not observed',
-  'type-changed': 'Type changed',
-  'type-expanded': 'Type expanded',
-  'type-narrowed': 'Type narrowed',
-  'became-nullable': 'Newly nullable',
-  'null-not-observed': 'Null not observed',
-  'presence-reduced': 'Presence reduced',
-  'presence-increased': 'Presence increased',
-  'elements-not-observed': 'Elements not observed',
-  'elements-observed': 'Elements observed',
+  'property-added': 'Adicionado',
+  'property-not-observed': 'Não observado',
+  'type-changed': 'Tipo alterado',
+  'type-expanded': 'Tipo ampliado',
+  'type-narrowed': 'Tipo restringido',
+  'became-nullable': 'Passou a aceitar null',
+  'null-not-observed': 'Null não observado',
+  'presence-reduced': 'Presença reduzida',
+  'presence-increased': 'Presença aumentada',
+  'elements-not-observed': 'Elementos não observados',
+  'elements-observed': 'Elementos observados',
 };
 
 const groups: { severity: ChangeSeverity; label: string }[] = [
-  { severity: 'potentially-breaking', label: 'Potentially breaking' },
-  { severity: 'review', label: 'Review' },
-  { severity: 'informational', label: 'Informational' },
+  { severity: 'potentially-breaking', label: 'Potencialmente incompatível' },
+  { severity: 'review', label: 'Revisar' },
+  { severity: 'informational', label: 'Informativo' },
 ];
 
 export function ChangeList({ changes }: { changes: ContractChange[] }) {
   if (!changes.length)
     return (
       <div className="empty">
-        <h3>No observed drift between these snapshots</h3>
+        <h3>Nenhum drift observado entre estes snapshots</h3>
         <p>
-          This is not a guarantee of compatibility. The samples may not cover
-          every response.
+          Isso não garante compatibilidade. As amostras podem não cobrir todas
+          as respostas.
         </p>
       </div>
     );
@@ -44,9 +44,12 @@ export function ChangeList({ changes }: { changes: ContractChange[] }) {
         return (
           <section key={group.severity}>
             <h3>
-              {group.label} <span className="count">{items.length}</span>
+              {group.label}{' '}
+              <span className="count">
+                {items.length.toLocaleString('pt-BR')}
+              </span>
             </h3>
-            <ul aria-label={`Drift changes: ${group.label}`}>
+            <ul aria-label={`Alterações de drift: ${group.label}`}>
               {items.map((change) => (
                 <li key={`${change.path}-${change.code}`}>
                   <div className="change-header">
@@ -60,8 +63,8 @@ export function ChangeList({ changes }: { changes: ContractChange[] }) {
                     <code>{change.path}</code>
                   </h4>
                   <p className="mono">
-                    {change.previous ?? 'Not observed'} →{' '}
-                    {change.current ?? 'Not observed'}
+                    {change.previous ?? 'Não observado'} →{' '}
+                    {change.current ?? 'Não observado'}
                   </p>
                   <p>{change.explanation}</p>
                 </li>
@@ -71,8 +74,8 @@ export function ChangeList({ changes }: { changes: ContractChange[] }) {
         );
       })}
       <p className="note">
-        Observed drift signals potential consumer impact; it does not prove API
-        compatibility or incompatibility.
+        O drift observado indica um possível impacto para quem consome a API;
+        não comprova compatibilidade nem incompatibilidade.
       </p>
     </div>
   );

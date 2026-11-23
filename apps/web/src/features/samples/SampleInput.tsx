@@ -20,8 +20,8 @@ export function SampleInput({
   return (
     <>
       <Tabs
-        name="Sample input"
-        labels={['Paste JSON', 'Upload files']}
+        name="Entrada de amostras"
+        labels={['Colar JSON', 'Enviar arquivos']}
         active={tab}
         onChange={setTab}
       >
@@ -32,26 +32,28 @@ export function SampleInput({
               value={text}
               onChange={setText}
               readOnly={disabled || reading}
-              label="JSON sample"
+              label="Amostra JSON"
             />
             <button
               disabled={disabled || reading || !text.trim()}
               onClick={() => {
-                if (onAdd([{ name: `sample-${number}.json`, text }])) {
+                if (onAdd([{ name: `amostra-${number}.json`, text }])) {
                   setNumber(number + 1);
                   setText('');
                 }
               }}
             >
-              Add sample
+              Adicionar amostra
             </button>
             {!text.trim() && (
-              <p className="note">Paste a JSON response to add a sample.</p>
+              <p className="note">
+                Cole uma resposta JSON para adicionar uma amostra.
+              </p>
             )}
           </>
         ) : (
           <label className="upload">
-            Choose JSON files
+            Escolher arquivos JSON
             <input
               type="file"
               multiple
@@ -66,10 +68,12 @@ export function SampleInput({
           </label>
         )}
       </Tabs>
-      {reading && <p>Reading files locally. Please wait before adding more.</p>}
+      {reading && (
+        <p>Lendo arquivos localmente. Aguarde antes de adicionar mais.</p>
+      )}
       <p className="note">
-        One JSON document is one response body. A root array is one sample, not
-        one sample per element. JSONL is not supported.
+        Cada documento JSON é o corpo de uma resposta. Um array na raiz conta
+        como uma amostra, não uma por elemento. JSONL não é aceito.
       </p>
     </>
   );

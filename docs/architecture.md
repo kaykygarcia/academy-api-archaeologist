@@ -46,14 +46,14 @@ The Zod output uses `coupon: z.string().nullable().optional()`. JSON Schema emit
 
 ## Drift direction and classification
 
-Comparison describes observed HTTP responses from baseline to new observations. These are the five engine results for the example, in core output order:
+Comparison describes observed HTTP responses from baseline to new observations. These are the five engine results for the example, in core output order (`Não observado` is the UI label for an absent side represented by `null` in the comparison result):
 
 | Path                  | Code                    | Severity               | Previous         | Current            |
 | --------------------- | ----------------------- | ---------------------- | ---------------- | ------------------ |
 | `$.coupon`            | `type-narrowed`         | `review`               | `string \| null` | `null`             |
-| `$.currency`          | `property-added`        | `informational`        | `Not observed`   | `string`           |
-| `$.customer.fullName` | `property-added`        | `informational`        | `Not observed`   | `string`           |
-| `$.customer.name`     | `property-not-observed` | `potentially-breaking` | `string`         | `Not observed`     |
+| `$.currency`          | `property-added`        | `informational`        | `Não observado`  | `string`           |
+| `$.customer.fullName` | `property-added`        | `informational`        | `Não observado`  | `string`           |
+| `$.customer.name`     | `property-not-observed` | `potentially-breaking` | `string`         | `Não observado`    |
 | `$.id`                | `type-expanded`         | `potentially-breaking` | `number`         | `string \| number` |
 
 The UI groups these results by severity, while retaining each group's path order. Missing properties, new or expanded types, newly observed nulls and reduced presence are potentially breaking. Narrower types and arrays whose elements are no longer observed need review. Additions, increased presence, nulls no longer observed and newly observed elements are informational. Nullability is compared separately from non-null kinds to avoid double reporting. Only the topmost added or missing property is reported; object children are compared only where both sides observed objects.
@@ -66,7 +66,7 @@ A handful of observed statuses cannot define a closed enum. Date-like, email-lik
 
 ## Worker and persistence
 
-The worker is a thin adapter around parsing, inference, generation and comparison. Request identifiers let the client ignore stale replies. Analysis reports phases rather than invented percentages. Cancel terminates the worker and creates a replacement, retaining the previous completed result. Invalid analysis clears the previous contract so it cannot appear to describe the invalid input. File text is read on the main thread; parsing and inference run in the worker.
+The worker is a thin adapter around parsing, inference, generation and comparison. Request identifiers let the client ignore stale replies. Analysis reports phases rather than invented percentages. `Cancelar` terminates the worker and creates a replacement, retaining the previous completed result. Invalid analysis clears the previous contract so it cannot appear to describe the invalid input. File text is read on the main thread; parsing and inference run in the worker.
 
 Dexie stores explicitly saved snapshots in IndexedDB. A snapshot contains the versioned contract, aggregated evidence and metadata, not the original JSON bodies. Opening one regenerates exports; it cannot reconstruct the raw samples. Unknown schema or contract versions cannot be opened or compared. Property names and user-entered metadata may still disclose API information, and local storage can be cleared or evicted.
 

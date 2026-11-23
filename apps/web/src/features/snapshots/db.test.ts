@@ -105,9 +105,9 @@ describe('local snapshot store', () => {
     expect(isCompatibleSnapshot({ contract })).toBe(false);
   });
   it('rejects blank names and renaming a missing record', async () => {
-    await expect(saveSnapshot({ name: ' ', contract })).rejects.toThrow('name');
+    await expect(saveSnapshot({ name: ' ', contract })).rejects.toThrow('nome');
     await expect(renameSnapshot('missing', 'New')).rejects.toThrow(
-      'no longer exists',
+      'não existe mais',
     );
   });
 });
@@ -115,12 +115,12 @@ describe('local snapshot store', () => {
 it('maps plain and wrapped quota errors without misclassifying unknown errors', () => {
   const quota = new DOMException('Full', 'QuotaExceededError');
   expect(storageError(quota)).toBe(
-    'Local storage is full. Delete an older snapshot and try again.',
+    'O armazenamento local está cheio. Exclua um snapshot antigo e tente novamente.',
   );
   expect(storageError({ name: 'AbortError', inner: quota })).toBe(
     storageError(quota),
   );
   expect(storageError(new Error('Unknown'))).toBe(
-    'Local snapshot storage is unavailable or the operation failed. Check browser storage permissions and available space, then retry.',
+    'O armazenamento local de snapshots está indisponível ou a operação falhou. Verifique as permissões de armazenamento do navegador e o espaço disponível e tente novamente.',
   );
 });

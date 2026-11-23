@@ -6,12 +6,14 @@ A browser-only tool that infers TypeScript, Zod and JSON Schema contracts from m
 ![Comparison of baseline and new observations](docs/screenshots/drift.png)
 ![Mobile analysis and export](docs/screenshots/mobile.png)
 
+The interface is in Brazilian Portuguese (pt-BR).
+
 ## How it works
 
-1. Paste JSON responses, upload JSON files, or select `Load example` to analyze the three fictional order fixtures. One document is one response sample, including a root array.
-2. Inspect the inferred fields and their evidence. In the example, `coupon` is present in 2/3 parent objects and has one null observation, making it optional and nullable for separate reasons.
+1. Paste JSON responses, upload JSON files, or select `Carregar exemplo` to analyze the three fictional order fixtures. One document is one response sample, including a root array.
+2. Inspect the inferred fields and their evidence. In the example, `coupon` is shown as `Observado em 2/3 objetos pai` and has one null observation, making it optional and nullable for separate reasons.
 3. Copy or download TypeScript, Zod 4 or JSON Schema 2020-12 generated from the same contract tree.
-4. Save the baseline as a local snapshot, then select `Load new observations`. Compare the saved baseline with `Current analysis` to see five changes, including an expanded `id` type and an unobserved `customer.name`.
+4. Save the baseline as a local snapshot, then select `Carregar novas observações`. Compare the saved baseline with `Análise atual` to see five changes, including an expanded `id` type and an unobserved `customer.name`.
 
 ## Design decisions
 
@@ -34,7 +36,7 @@ Inputs are bounded to 200 samples, 5 MiB per sample, 20 MiB per session, depth 5
 
 ## Local use
 
-`VITE_REPOSITORY_URL` is an optional build-time variable for the repository URL, for example `VITE_REPOSITORY_URL=https://github.com/<owner>/<repo> pnpm build`. The GitHub and Documentation links are hidden when it is unset. The Docker images do not pass it, so those links are hidden there.
+`VITE_REPOSITORY_URL` is an optional build-time variable for the repository URL, for example `VITE_REPOSITORY_URL=https://github.com/<owner>/<repo> pnpm build`. The GitHub and `Documentação` links are hidden when it is unset. The Docker images do not pass it, so those links are hidden there.
 
 Use Node 24.21.0 from `.nvmrc`. pnpm 12.23.0 is declared in `packageManager`; make it available through Corepack (`corepack enable`) or a manual installation of that version.
 

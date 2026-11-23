@@ -35,7 +35,7 @@ Uploads check `File.size` before reading and decoded UTF-8 text size afterward. 
 
 The contract tree renders all children of an expanded object, and the first two levels are expanded by default, so very wide objects with tens of thousands of properties at one level can render slowly.
 
-One measurement on the Docker production build (headless Chromium bundled with Playwright 1.65.1, same machine as the benchmark below), from the Analyze click until the last property row was in the DOM, for one sample with N number properties at depth 1: 1,000 properties took 258 ms, 10,000 took 889 ms and 50,000 took 4,887 ms. These are single runs, not a benchmark.
+One measurement on the Docker production build (headless Chromium bundled with Playwright 1.65.1, same machine as the benchmark below), from the `Analisar amostras` click until the last property row was in the DOM, for one sample with N number properties at depth 1: 1,000 properties took 258 ms, 10,000 took 889 ms and 50,000 took 4,887 ms. These are single runs, not a benchmark.
 
 On 2026-11-23, `pnpm --filter @api-archaeologist/core bench` ran with Node v24.21.0 on Ubuntu 26.04.1 LTS, x86_64, AMD Ryzen 7 4800H with Radeon Graphics (8 cores, 16 logical processors). The installed Vitest 5.1.1 measured the following artificial workloads:
 

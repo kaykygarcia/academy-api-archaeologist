@@ -6,7 +6,7 @@ import './styles/index.css';
 const root = document.getElementById('root');
 
 if (!root) {
-  throw new Error('Missing application root element.');
+  throw new Error('Elemento raiz da aplicação não encontrado.');
 }
 
 createRoot(root).render(

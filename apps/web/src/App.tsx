@@ -1,6 +1,7 @@
 import type { Metadata, Result } from './lib/result';
 import { useRef, useState } from 'react';
 import {
+  pluralize,
   type ContractChange,
   type SampleInput as Sample,
 } from '@api-archaeologist/core';
@@ -25,7 +26,7 @@ export function App() {
   const [result, setResult] = useState<Result | null>(null);
   const [changes, setChanges] = useState<ContractChange[] | null>(null);
   const [status, setStatus] = useState(
-    'Ready. Add samples or load the example.',
+    'Pronto. Adicione amostras ou carregue o exemplo.',
   );
   const [errors, setErrors] = useState<string[]>([]);
   const [example, setExample] = useState<'baseline' | 'current' | null>(null);
@@ -45,8 +46,8 @@ export function App() {
     pending.current = null;
     setStatus(
       validation
-        ? `Validation failed: ${messages.length} ${messages.length === 1 ? 'error' : 'errors'}.`
-        : 'Operation failed. See the error summary.',
+        ? `Falha na validação: ${messages.length.toLocaleString('pt-BR')} ${pluralize(messages.length, 'erro', 'erros')}.`
+        : 'Falha na operação. Consulte o resumo de erros.',
     );
     requestAnimationFrame(() => errorSummary.current?.focus());
   }
@@ -58,7 +59,7 @@ export function App() {
       else if ('changes' in response) {
         setChanges(response.changes);
         setStatus(
-          `Comparison complete. ${response.changes.length} observed changes.`,
+          `Comparação concluída. ${response.changes.length.toLocaleString('pt-BR')} ${pluralize(response.changes.length, 'alteração observada', 'alterações observadas')}.`,
         );
       } else if (pending.current) {
         setResult({
@@ -67,7 +68,7 @@ export function App() {
           revision: response.id,
         });
         pending.current = null;
-        setStatus('Contract ready. Inspect the observed evidence below.');
+        setStatus('Contrato pronto. Confira as evidências observadas abaixo.');
         requestAnimationFrame(() => heading.current?.focus());
       }
     },
@@ -82,14 +83,14 @@ export function App() {
     setErrors([]);
     setChanges(null);
     pending.current = metadata;
-    setStatus('Starting analysis…');
+    setStatus('Iniciando análise…');
     operation.current = 'analyze';
     run({ type: 'analyze', samples: input });
   }
   function loadExample(current: boolean) {
     const input = current ? currentSamples : baselineSamples;
     const metadata = {
-      dataset: 'Orders example',
+      dataset: 'Exemplo de pedidos',
       method: 'GET',
       endpoint: '/orders/:id',
       opened: false,
@@ -110,7 +111,7 @@ export function App() {
       opened: true,
       snapshotId: snapshot.id,
     };
-    setStatus('Opening snapshot…');
+    setStatus('Abrindo snapshot…');
     operation.current = 'open';
     run({ type: 'open', contract: snapshot.contract });
   }
@@ -120,8 +121,8 @@ export function App() {
         <a className="wordmark" href="#main">
           API Archaeologist
         </a>
-        <nav aria-label="Main navigation">
-          <a href="#snapshots">Saved snapshots</a>
+        <nav aria-label="Navegação principal">
+          <a href="#snapshots">Snapshots salvos</a>
           {repository && (
             <a href={repository} rel="noreferrer">
               GitHub
@@ -131,22 +132,23 @@ export function App() {
       </header>
       <main id="main">
         <section className="intro">
-          <p className="eyebrow">Kayky Academy / Developer tools</p>
+          <p className="eyebrow">
+            Kayky Academy / Ferramentas para desenvolvedores
+          </p>
           <h1>
-            Understand your API,
-            <br />
-            from the evidence it leaves behind.
+            Entenda sua API <br />
+            pelas evidências que ela deixa.
           </h1>
-          <p>Infer, inspect and compare contracts from JSON responses.</p>
+          <p>Infira, examine e compare contratos a partir de respostas JSON.</p>
           <div className="actions">
             <button
               className="primary"
               disabled={locked}
               onClick={() => loadExample(false)}
             >
-              Load example
+              Carregar exemplo
             </button>
-            <span className="privacy">Your data stays in this browser</span>
+            <span className="privacy">Seus dados ficam neste navegador</span>
           </div>
         </section>
         <div
@@ -164,7 +166,7 @@ export function App() {
             className="error-box"
             ref={errorSummary}
             tabIndex={-1}
-            aria-label="Error summary"
+            aria-label="Resumo de erros"
           >
             {errors.map((error, index) => (
               <li key={index}>{error}</li>
@@ -173,22 +175,22 @@ export function App() {
         )}
         {example && (
           <aside className="example-hint">
-            <strong>Example</strong>
+            <strong>Exemplo</strong>
             {example === 'baseline' ? (
               <>
                 <p>
-                  Save the baseline snapshot first. Then load new observations
-                  and compare them against your saved baseline.
+                  Salve primeiro o snapshot do baseline. Depois carregue novas
+                  observações e compare com o baseline salvo.
                 </p>
                 <button disabled={locked} onClick={() => loadExample(true)}>
-                  Load new observations
+                  Carregar novas observações
                 </button>
               </>
             ) : (
               <>
                 <p>
-                  Choose your saved baseline and Current analysis below, then
-                  Compare.
+                  Escolha o baseline salvo e “Análise atual” abaixo e, em
+                  seguida, clique em Comparar.
                 </p>
                 <button
                   onClick={() => {
@@ -196,7 +198,7 @@ export function App() {
                     comparisonHeading.current?.focus();
                   }}
                 >
-                  Go to comparison
+                  Ir para a comparação
                 </button>
               </>
             )}
@@ -218,7 +220,7 @@ export function App() {
               const restarted = cancel();
               pending.current = null;
               if (restarted) {
-                setStatus('Analysis cancelled');
+                setStatus('Análise cancelada');
                 requestAnimationFrame(() => statusRegion.current?.focus());
               }
             }}
@@ -251,8 +253,8 @@ export function App() {
           currentSnapshotId={result?.metadata.snapshotId}
           currentLabel={
             result?.metadata.opened
-              ? `Opened snapshot: ${snapshots.find((snapshot) => snapshot.id === result.metadata.snapshotId)?.name ?? result.metadata.dataset}`
-              : 'Current analysis'
+              ? `Snapshot aberto: ${snapshots.find((snapshot) => snapshot.id === result.metadata.snapshotId)?.name ?? result.metadata.dataset}`
+              : 'Análise atual'
           }
           snapshots={snapshots}
           current={result?.contract ?? null}
@@ -263,7 +265,7 @@ export function App() {
             comparedIds.current = snapshotIds;
             setChanges(null);
             setErrors([]);
-            setStatus('Comparing observations…');
+            setStatus('Comparando observações…');
             operation.current = 'compare';
             run({ type: 'compare', baseline, current });
           }}
@@ -275,7 +277,7 @@ export function App() {
 }
 
 function phaseLabel(phase: 'parsing' | 'inferring' | 'generating'): string {
-  if (phase === 'parsing') return 'Parsing samples';
-  if (phase === 'inferring') return 'Inferring contract';
-  return 'Generating exports';
+  if (phase === 'parsing') return 'Interpretando amostras';
+  if (phase === 'inferring') return 'Inferindo contrato';
+  return 'Gerando exportações';
 }

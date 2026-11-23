@@ -13,8 +13,9 @@ import type { Request, Response } from '../lib/analysis-protocol';
 
 function locationSuffix(error: { line?: number; column?: number }): string {
   if (error.line === undefined) return '';
-  const column = error.column === undefined ? '' : `, column ${error.column}`;
-  return ` (line ${error.line}${column})`;
+  const column =
+    error.column === undefined ? '' : `, coluna ${String(error.column)}`;
+  return ` (linha ${String(error.line)}${column})`;
 }
 
 function send(response: Response) {
@@ -69,7 +70,7 @@ self.onmessage = (event: MessageEvent<Request>) => {
       errors: [
         error instanceof InferenceError
           ? error.message
-          : 'Analysis could not complete. Check the input and supported limits, then try again.',
+          : 'Não foi possível concluir a análise. Verifique os dados de entrada e os limites aceitos e tente novamente.',
       ],
     });
   }

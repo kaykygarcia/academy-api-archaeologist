@@ -4,24 +4,25 @@ export function Footer({ repository }: { repository?: string }) {
   return (
     <footer>
       <p>
-        Limits: {LIMITS.MAX_SAMPLES} samples ·{' '}
-        {formatMiB(LIMITS.MAX_SAMPLE_BYTES)} per sample ·{' '}
-        {formatMiB(LIMITS.MAX_SESSION_BYTES)} per session · depth{' '}
-        {LIMITS.MAX_DEPTH} · {LIMITS.MAX_VISITED_VALUES.toLocaleString()}{' '}
-        visited values.
+        Limites: {LIMITS.MAX_SAMPLES} amostras ·{' '}
+        {formatMiB(LIMITS.MAX_SAMPLE_BYTES)} por amostra ·{' '}
+        {formatMiB(LIMITS.MAX_SESSION_BYTES)} por sessão · profundidade{' '}
+        {LIMITS.MAX_DEPTH} · {LIMITS.MAX_VISITED_VALUES.toLocaleString('pt-BR')}{' '}
+        valores visitados.
       </p>
       <p>
-        Processing stays local. No analytics or sample uploads. Raw responses
-        stay in session memory; snapshots are saved only when you choose.
+        O processamento é local. Sem rastreamento de uso nem envio de amostras.
+        As respostas originais ficam na memória da sessão; os snapshots são
+        salvos somente quando você escolhe.
       </p>
       <p>
-        Evidence describes the samples you provide, not every possible API
-        response.
+        As evidências descrevem as amostras fornecidas, não todas as respostas
+        possíveis da API.
         {repository && (
           <>
             {' '}
             <a href={`${repository.replace(/\/$/, '')}/tree/main/docs`}>
-              Documentation
+              Documentação
             </a>
           </>
         )}

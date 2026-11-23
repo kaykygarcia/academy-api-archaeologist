@@ -45,7 +45,9 @@ class EditorBoundary extends Component<
     if (this.state.failed) {
       return (
         <>
-          <p className="note">Editor failed to load; showing plain text.</p>
+          <p className="note">
+            Falha ao carregar o editor; exibindo texto simples.
+          </p>
           <PlainCode {...this.props.editor} />
         </>
       );
@@ -62,7 +64,7 @@ export function LazyCodeEditor(props: CodeEditorProps) {
           props.mode === 'viewer' ? (
             <PlainCode {...props} />
           ) : (
-            <div className="code-editor">Loading editor…</div>
+            <div className="code-editor">Carregando editor…</div>
           )
         }
       >

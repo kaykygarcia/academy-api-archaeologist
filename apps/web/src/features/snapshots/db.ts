@@ -40,7 +40,8 @@ export async function saveSnapshot(input: {
   endpoint?: string;
   contract: InferredContract;
 }): Promise<ContractSnapshot> {
-  if (!input.name.trim()) throw new Error('A snapshot name is required.');
+  if (!input.name.trim())
+    throw new Error('É necessário informar um nome para o snapshot.');
   const record: ContractSnapshot = {
     id: crypto.randomUUID(),
     name: input.name.trim(),
@@ -61,9 +62,10 @@ export function listSnapshots(): Promise<ContractSnapshot[]> {
 }
 
 export async function renameSnapshot(id: string, name: string) {
-  if (!name.trim()) throw new Error('A snapshot name is required.');
+  if (!name.trim())
+    throw new Error('É necessário informar um nome para o snapshot.');
   if (!(await snapshots.update(id, { name: name.trim() })))
-    throw new Error('Snapshot no longer exists.');
+    throw new Error('O snapshot não existe mais.');
 }
 
 export function deleteSnapshot(id: string) {
@@ -87,8 +89,8 @@ export function storageError(error: unknown): string {
       'inner' in error &&
       isQuotaError(error.inner))
   )
-    return 'Local storage is full. Delete an older snapshot and try again.';
-  return 'Local snapshot storage is unavailable or the operation failed. Check browser storage permissions and available space, then retry.';
+    return 'O armazenamento local está cheio. Exclua um snapshot antigo e tente novamente.';
+  return 'O armazenamento local de snapshots está indisponível ou a operação falhou. Verifique as permissões de armazenamento do navegador e o espaço disponível e tente novamente.';
 }
 
 export function suggestedName(
@@ -98,5 +100,5 @@ export function suggestedName(
 ): string {
   const today = new Date();
   const date = formatDate(today);
-  return `${[method, endpoint].filter(Boolean).join(' ') || dataset.replace(/ — \d{4}-\d{2}-\d{2}$/, '') || 'Untitled dataset'} — ${date}`;
+  return `${[method, endpoint].filter(Boolean).join(' ') || dataset.replace(/ — \d{4}-\d{2}-\d{2}$/, '') || 'Conjunto sem nome'} — ${date}`;
 }

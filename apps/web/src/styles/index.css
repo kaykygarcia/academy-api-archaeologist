@@ -648,6 +648,7 @@ textarea.plain-code:focus-visible,
 
 .change-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: calc(var(--spacing) * 2);
 }

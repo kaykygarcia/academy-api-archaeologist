@@ -40,13 +40,13 @@ export function SnapshotsSection({
       id="snapshots"
       aria-labelledby="snapshots-heading"
     >
-      <p className="eyebrow">03 / Keep a baseline</p>
+      <p className="eyebrow">03 / Mantenha um baseline</p>
       <h2 id="snapshots-heading" ref={listHeading} tabIndex={-1}>
-        Saved snapshots
+        Snapshots salvos
       </h2>
       <p>
-        Only the contract and aggregated evidence are stored, not the raw JSON
-        responses.
+        Somente o contrato e as evidências agregadas são armazenados, não as
+        respostas JSON originais.
       </p>
       <p className="note">{sharingWarning}</p>
       {saving && result ? (
@@ -68,7 +68,7 @@ export function SnapshotsSection({
                     endpoint: result.metadata.endpoint || undefined,
                     contract: result.contract,
                   }),
-                'Snapshot saved.',
+                'Snapshot salvo.',
               )
             )
               closeSave();
@@ -80,19 +80,19 @@ export function SnapshotsSection({
           disabled={!result || locked}
           onClick={() => setSaving(true)}
         >
-          Save snapshot
+          Salvar snapshot
         </button>
       )}
       {!result && (
         <p className="note">
-          Analyze samples or open a compatible snapshot before saving.
+          Analise amostras ou abra um snapshot compatível antes de salvar.
         </p>
       )}
       {storageMessage && (
         <div className="error-box">
           <p>{storageMessage}</p>
           <button disabled={locked} onClick={() => void retry()}>
-            Retry storage
+            Tentar novamente
           </button>
         </div>
       )}
@@ -109,17 +109,18 @@ export function SnapshotsSection({
               await renameSnapshot(id, name);
               onRenamed(id, name.trim());
             },
-            'Snapshot renamed.',
+            'Snapshot renomeado.',
             id,
           )
         }
         onDelete={(id) =>
-          write(() => deleteSnapshot(id), 'Snapshot deleted.', id)
+          write(() => deleteSnapshot(id), 'Snapshot excluído.', id)
         }
       />
       <p className="note">
-        Local storage is not a backup. Your browser or you can clear it.
-        Property names and metadata can still reveal API information.
+        O armazenamento local não é uma cópia de segurança. Você ou o navegador
+        podem apagá-lo. Nomes de propriedades e metadados ainda podem revelar
+        informações da API.
       </p>
     </section>
   );

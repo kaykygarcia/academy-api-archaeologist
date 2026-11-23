@@ -50,16 +50,16 @@ export function ComparisonPanel({
       disabled={!isCompatibleSnapshot(snapshot)}
     >
       {snapshot.name}
-      {!isCompatibleSnapshot(snapshot) ? ' (incompatible)' : ''}
+      {!isCompatibleSnapshot(snapshot) ? ' (incompatível)' : ''}
     </option>
   ));
   return (
     <section className="section" aria-labelledby="comparison-heading">
-      <p className="eyebrow">04 / Observe change</p>
+      <p className="eyebrow">04 / Observe as mudanças</p>
       <h2 id="comparison-heading" ref={headingRef} tabIndex={-1}>
-        Comparison
+        Comparação
       </h2>
-      <p>Direction: observed HTTP responses, baseline → new observations</p>
+      <p>Direção: respostas HTTP observadas, baseline → novas observações</p>
       <div className="comparison-controls">
         <label>
           Baseline
@@ -71,12 +71,12 @@ export function ComparisonPanel({
               onReset();
             }}
           >
-            <option value="">Choose a saved snapshot</option>
+            <option value="">Escolha um snapshot salvo</option>
             {options}
           </select>
         </label>
         <label>
-          New observations
+          Novas observações
           <select
             value={next}
             disabled={busy}
@@ -85,7 +85,7 @@ export function ComparisonPanel({
               onReset();
             }}
           >
-            <option value="">Choose observations</option>
+            <option value="">Escolha as novas observações</option>
             {current && <option value="current">{currentLabel}</option>}
             {options}
           </select>
@@ -102,17 +102,17 @@ export function ComparisonPanel({
               ]);
           }}
         >
-          Compare
+          Comparar
         </button>
       </div>
       {sameSnapshot && previous && newer && (
         <p className="note" id="comparison-reason">
-          Choose different snapshots to compare.
+          Escolha snapshots diferentes para comparar.
         </p>
       )}
       {(!previous || !newer) && (
         <p className="note" id="comparison-reason">
-          Choose both a baseline and new observations to compare.
+          Escolha um baseline e novas observações para comparar.
         </p>
       )}
       {changes && <ChangeList changes={changes} />}

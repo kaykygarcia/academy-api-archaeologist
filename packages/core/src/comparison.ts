@@ -1,3 +1,4 @@
+import { pluralize } from './pluralize';
 import {
   compareNames,
   describeType,
@@ -70,7 +71,7 @@ function compareKinds(
 ): void {
   const previous = describeType(before);
   const next = describeType(after);
-  const evidence = `Baseline: ${formatKindCounts(before)}. New samples: ${formatKindCounts(after)}.`;
+  const evidence = `Baseline: ${formatKindCounts(before)}. Novas amostras: ${formatKindCounts(after)}.`;
   const oldKinds = observedKinds(before).filter((kind) => kind !== 'null');
   const newKinds = observedKinds(after).filter((kind) => kind !== 'null');
   const gained = newKinds.filter((kind) => !oldKinds.includes(kind));
@@ -80,10 +81,10 @@ function compareKinds(
       oldKinds.length > 0 && !newKinds.some((kind) => oldKinds.includes(kind))
         ? 'type-changed'
         : 'type-expanded';
-    const gainedEvidence = `Non-null kinds gained: ${gained.join(', ')}.`;
+    const gainedEvidence = `Novos tipos não nulos: ${gained.join(', ')}.`;
     const lostEvidence =
       lost.length > 0
-        ? ` Non-null kinds not observed: ${lost.join(', ')}.`
+        ? ` Tipos não nulos não observados: ${lost.join(', ')}.`
         : '';
     changes.push(
       change(
@@ -95,9 +96,9 @@ function compareKinds(
       ),
     );
   } else if (lost.length > 0) {
-    const lostEvidence = `Non-null kinds not observed: ${lost.join(', ')}.`;
+    const lostEvidence = `Tipos não nulos não observados: ${lost.join(', ')}.`;
     const caveat =
-      'A narrower observation does not prove the previous behaviour was removed.';
+      'Uma observação mais restrita não comprova que o comportamento anterior foi removido.';
     changes.push(
       change(
         'type-narrowed',
@@ -118,10 +119,10 @@ function compareNullability(
 ): void {
   const previous = describeType(before);
   const next = describeType(after);
-  const oldNulls = `${before.kindCounts.null}/${before.observations}`;
-  const newNulls = `${after.kindCounts.null}/${after.observations}`;
-  const evidence = `Null observed ${oldNulls} times in the baseline, ${newNulls} in the new samples`;
-  const caveat = 'this does not prove null is no longer possible.';
+  const oldNulls = `${before.kindCounts.null.toLocaleString('pt-BR')}/${before.observations.toLocaleString('pt-BR')}`;
+  const newNulls = `${after.kindCounts.null.toLocaleString('pt-BR')}/${after.observations.toLocaleString('pt-BR')}`;
+  const evidence = `Null observado ${oldNulls} ${pluralize(before.kindCounts.null, 'vez', 'vezes')} no baseline, ${newNulls} ${pluralize(after.kindCounts.null, 'vez', 'vezes')} nas novas amostras`;
+  const caveat = 'isso não comprova que null deixou de ser possível.';
   if (!isNullable(before) && isNullable(after))
     changes.push(
       change('became-nullable', path, previous, next, `${evidence}.`),
@@ -156,9 +157,9 @@ function compareProperties(
       const oldProperty = oldProperties.get(name);
       const newProperty = newProperties.get(name);
       const pathToProperty = propertyPath(path, name);
-      const oldPresence = `${oldProperty?.presentCount ?? 0}/${before.kindCounts.object} parent objects`;
-      const newPresence = `${newProperty?.presentCount ?? 0}/${after.kindCounts.object} parent objects`;
-      const presence = `Observed in ${oldPresence} in the baseline, ${newPresence} in the new samples.`;
+      const oldPresence = `${(oldProperty?.presentCount ?? 0).toLocaleString('pt-BR')}/${before.kindCounts.object.toLocaleString('pt-BR')} ${pluralize(before.kindCounts.object, 'objeto pai', 'objetos pai')}`;
+      const newPresence = `${(newProperty?.presentCount ?? 0).toLocaleString('pt-BR')}/${after.kindCounts.object.toLocaleString('pt-BR')} ${pluralize(after.kindCounts.object, 'objeto pai', 'objetos pai')}`;
+      const presence = `Observado em ${oldPresence} no baseline, ${newPresence} nas novas amostras.`;
       if (!oldProperty && newProperty)
         changes.push(
           change(
@@ -166,12 +167,12 @@ function compareProperties(
             pathToProperty,
             null,
             describeType(newProperty.value),
-            `New property observed. ${presence}`,
+            `Nova propriedade observada. ${presence}`,
           ),
         );
       else if (oldProperty && !newProperty) {
         const absence =
-          'Property not observed in the new samples; it may have been removed or the samples may not cover the case.';
+          'Propriedade não observada nas novas amostras; pode ter sido removida ou as amostras podem não cobrir o caso.';
         changes.push(
           change(
             'property-not-observed',
@@ -185,8 +186,8 @@ function compareProperties(
         const wasOptional = isOptional(oldProperty, before);
         const nowOptional = isOptional(newProperty, after);
         const caveat = nowOptional
-          ? 'Presence is no longer observed in every parent.'
-          : 'This does not prove it is now required.';
+          ? 'A presença não é mais observada em todos os objetos pai.'
+          : 'Isso não comprova que a propriedade agora é obrigatória.';
         if (wasOptional !== nowOptional)
           changes.push(
             change(
@@ -212,8 +213,8 @@ function compareElements(
   const previous = describeType(before);
   const next = describeType(after);
   if (before.array && after.array) {
-    const oldEvidence = `${before.array.elementCount} elements across ${before.kindCounts.array} arrays`;
-    const newEvidence = `${after.array.elementCount} across ${after.kindCounts.array} arrays`;
+    const oldEvidence = `${before.array.elementCount.toLocaleString('pt-BR')} ${pluralize(before.array.elementCount, 'elemento', 'elementos')} em ${before.kindCounts.array.toLocaleString('pt-BR')} ${pluralize(before.kindCounts.array, 'array', 'arrays')}`;
+    const newEvidence = `${after.array.elementCount.toLocaleString('pt-BR')} ${pluralize(after.array.elementCount, 'elemento', 'elementos')} em ${after.kindCounts.array.toLocaleString('pt-BR')} ${pluralize(after.kindCounts.array, 'array', 'arrays')}`;
     const oldElement = before.array.element;
     const newElement = after.array.element;
     if (oldElement && newElement)
@@ -225,7 +226,7 @@ function compareElements(
           path,
           previous,
           next,
-          `Observed ${oldEvidence} in the baseline, ${newEvidence} in the new samples.`,
+          `Contagem: ${oldEvidence} no baseline, ${newEvidence} nas novas amostras.`,
         ),
       );
   }
@@ -238,7 +239,7 @@ export function compareContracts(
   if (baseline.formatVersion !== 1 || current.formatVersion !== 1)
     throw new InferenceError(
       'incompatible-contract',
-      'Both contracts must use formatVersion 1.',
+      'Os dois contratos devem usar formatVersion 1.',
     );
   const changes: ContractChange[] = [];
   walk(baseline.root, current.root, '$', changes);

@@ -6,7 +6,7 @@ import { copyCode } from '../../lib/clipboard';
 import { downloadCode } from '../../lib/download';
 
 export const sharingWarning =
-  'Remove tokens, personal data and secrets before sharing screenshots or exports.';
+  'Remova credenciais, dados pessoais e segredos antes de compartilhar capturas de tela ou exportações.';
 
 export function ExportPanel({
   result,
@@ -48,11 +48,11 @@ export function ExportPanel({
   };
   return (
     <section className="section" aria-labelledby="export-heading">
-      <p className="eyebrow">02 / Take it with you</p>
-      <h2 id="export-heading">Export</h2>
+      <p className="eyebrow">02 / Leve com você</p>
+      <h2 id="export-heading">Exportar</h2>
       <p className="note">{sharingWarning}</p>
       <Tabs
-        name="Export format"
+        name="Formato de exportação"
         labels={['TypeScript', 'Zod', 'JSON Schema']}
         active={tab}
         onChange={(index) => {
@@ -67,20 +67,20 @@ export function ExportPanel({
             value={code}
             readOnly
             language={tab === 2 ? 'json' : 'typescript'}
-            label="Generated code"
+            label="Código gerado"
           />
         ) : (
           <p className="empty">
-            Analyze samples or open a snapshot to generate an export.
+            Analise amostras ou abra um snapshot para gerar uma exportação.
           </p>
         )}
       </Tabs>
       <p className="note">
-        JSON Schema <code>required</code> means “observed in every parent object
-        seen”, not a guarantee about future responses.
+        Em JSON Schema, <code>required</code> significa “observado em todos os
+        objetos pai analisados”, não uma garantia sobre respostas futuras.
       </p>
       <span className="sr-only" aria-live="polite" aria-atomic="true">
-        {copyError ? 'Copy failed' : copied === code ? 'Copied' : ''}
+        {copyError ? 'Falha ao copiar' : copied === code ? 'Copiado' : ''}
         {(copyError || copied === code) && announcement % 2 === 1 && '\u00a0'}
       </span>
       {copyError && <p className="error-text">{copyError}</p>}
@@ -96,26 +96,26 @@ export function ExportPanel({
             setCopyError(
               ok
                 ? ''
-                : 'Copy failed. Clipboard access was denied or unavailable.',
+                : 'Falha ao copiar. O acesso à área de transferência foi negado ou está indisponível.',
             );
             clearTimeout(timer.current);
             if (ok) timer.current = setTimeout(() => setCopied(null), 2000);
           }}
         >
-          {copied === code ? 'Copied' : 'Copy'}
+          {copied === code ? 'Copiado' : 'Copiar'}
         </button>
         <button
           disabled={!result}
           onClick={() => {
             try {
               downloadCode(dataset, extensions[format], code);
-              report('Download prepared.');
+              report('Arquivo preparado para baixar.');
             } catch {
-              report('Download failed. Try again.');
+              report('Falha ao baixar. Tente novamente.');
             }
           }}
         >
-          Download
+          Baixar
         </button>
       </div>
     </section>

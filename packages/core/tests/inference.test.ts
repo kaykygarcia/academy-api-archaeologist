@@ -151,10 +151,10 @@ test('one observation reports 1 of 1 parent objects without claiming requirednes
   const [change] = changes;
   expect(change).toMatchObject({
     code: 'presence-reduced',
-    previous: '1/1 parent objects',
-    current: '1/2 parent objects',
+    previous: '1/1 objeto pai',
+    current: '1/2 objetos pai',
   });
-  expect(change?.explanation).not.toMatch(/\brequired\b/i);
+  expect(change?.explanation).not.toMatch(/\bobrigatóri[oa]\b/i);
 });
 
 test('INF-09 heterogeneous roots and nested arrays keep canonical kinds', () => {
