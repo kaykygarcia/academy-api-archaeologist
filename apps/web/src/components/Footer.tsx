@@ -11,9 +11,10 @@ export function Footer({ repository }: { repository?: string }) {
         valores visitados.
       </p>
       <p>
-        O processamento é local. Sem rastreamento de uso nem envio de amostras.
-        As respostas originais ficam na memória da sessão; os snapshots são
-        salvos somente quando você escolhe.
+        O processamento é local: amostras, contratos e snapshots nunca saem do
+        navegador. A versão pública usa o Cloudflare Web Analytics, sem cookies,
+        para medir visitas e desempenho. As respostas originais ficam na memória
+        da sessão; os snapshots são salvos somente quando você escolhe.
       </p>
       <p>
         As evidências descrevem as amostras fornecidas, não todas as respostas

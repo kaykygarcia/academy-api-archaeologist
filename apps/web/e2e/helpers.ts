@@ -10,6 +10,18 @@ export const test = base.extend<{ networkGuard: undefined }>({
     async ({ context, baseURL }, use) => {
       if (!baseURL) throw new Error('E2E baseURL is required');
       const origin = new URL(baseURL).origin;
+      // The public Cloudflare Pages deployment enables Web Analytics: exact hostnames over HTTPS only.
+      const analyticsHosts = new Set([
+        'static.cloudflareinsights.com',
+        'cloudflareinsights.com',
+      ]);
+      const isForbiddenRequest = (requestUrl: string) => {
+        const url = new URL(requestUrl);
+        return (
+          url.origin !== origin &&
+          !(url.protocol === 'https:' && analyticsHosts.has(url.hostname))
+        );
+      };
       const external = new Set<string>();
       const pageErrors: string[] = [];
       const consoleErrors: string[] = [];
@@ -20,11 +32,10 @@ export const test = base.extend<{ networkGuard: undefined }>({
         if (message.type() === 'error') consoleErrors.push(message.text());
       });
       context.on('request', (request) => {
-        if (new URL(request.url()).origin !== origin)
-          external.add(request.url());
+        if (isForbiddenRequest(request.url())) external.add(request.url());
       });
       await context.route('**/*', async (route) => {
-        if (new URL(route.request().url()).origin !== origin) {
+        if (isForbiddenRequest(route.request().url())) {
           external.add(route.request().url());
           await route.abort();
         } else await route.continue();
@@ -32,7 +43,7 @@ export const test = base.extend<{ networkGuard: undefined }>({
       await use(undefined);
       expect(
         { externalRequests: [...external], pageErrors, consoleErrors },
-        'No external requests, page errors or console errors are allowed',
+        'No unapproved external requests, page errors or console errors are allowed',
       ).toEqual({ externalRequests: [], pageErrors: [], consoleErrors: [] });
     },
     { auto: true },
