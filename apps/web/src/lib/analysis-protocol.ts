@@ -1,6 +1,4 @@
 import type {
-  ContractChange,
-  AlignedRow,
   ContractSummary,
   InferredContract,
   SampleInput,
@@ -14,16 +12,12 @@ export type AnalysisResult = {
   jsonSchema: string;
 };
 
-export type Job =
-  | { type: 'analyze'; samples: SampleInput[] }
-  | { type: 'open'; contract: InferredContract }
-  | { type: 'compare'; baseline: InferredContract; current: InferredContract };
+export type Job = { type: 'analyze'; samples: SampleInput[] };
 
 export type Request = Job & { id: number };
 
 export type Response = { id: number } & (
   | { phase: 'parsing' | 'inferring' | 'generating' }
   | { result: AnalysisResult }
-  | { changes: ContractChange[]; rows: AlignedRow[] }
   | { errors: string[]; validation?: boolean }
 );

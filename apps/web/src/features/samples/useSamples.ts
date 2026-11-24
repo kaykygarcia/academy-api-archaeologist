@@ -5,7 +5,9 @@ import {
   pluralize,
   type SampleInput,
 } from '@api-archaeologist/core';
-import type { SessionSample } from './SampleList';
+
+export type SessionSample = SampleInput & { id: string; bytes: number };
+export type Report = (message: string, tone?: 'error') => void;
 
 function sessionSamples(samples: SampleInput[]): SessionSample[] {
   return samples.map((sample) => ({
@@ -15,12 +17,11 @@ function sessionSamples(samples: SampleInput[]): SessionSample[] {
   }));
 }
 
-export function useSamples(report: (message: string) => void) {
+export function useSamples(report: Report) {
   const [samples, setSamples] = useState<SessionSample[]>([]);
-  const [dataset, setDataset] = useState('');
-  const [method, setMethod] = useState('');
-  const [endpoint, setEndpoint] = useState('');
   const [reading, setReading] = useState(false);
+  // null selects the draft for a new sample; an id edits that sample.
+  const [selected, setSelected] = useState<string | null>(null);
   const readingFiles = useRef(false);
 
   function precheck(additions: { name: string; bytes: number }[]): boolean {
@@ -30,7 +31,8 @@ export function useSamples(report: (message: string) => void) {
     );
     if (oversized.length) {
       report(
-        `${oversized.map((sample) => sample.name).join(', ')}: excede o limite de ${formatMiB(LIMITS.MAX_SAMPLE_BYTES)} por amostra. Nenhuma amostra foi adicionada.`,
+        `${oversized.map((sample) => sample.name).join(', ')}: passa de ${formatMiB(LIMITS.MAX_SAMPLE_BYTES)}. Nada foi adicionado.`,
+        'error',
       );
       return false;
     }
@@ -42,29 +44,31 @@ export function useSamples(report: (message: string) => void) {
       ) > LIMITS.MAX_SESSION_BYTES
     ) {
       report(
-        `Limite da sessão: ${LIMITS.MAX_SAMPLES} amostras e ${formatMiB(LIMITS.MAX_SESSION_BYTES)}, incluindo as amostras já adicionadas.`,
+        `Limite da sessão: ${LIMITS.MAX_SAMPLES} amostras e ${formatMiB(LIMITS.MAX_SESSION_BYTES)}.`,
+        'error',
       );
       return false;
     }
     return true;
   }
 
-  function append(additions: SessionSample[]) {
+  function append(additions: SessionSample[], announce: boolean) {
     setSamples((previous) => [...previous, ...additions]);
-    report(
-      `${pluralize(additions.length, 'Amostra adicionada', 'Amostras adicionadas')}. Analise para atualizar o contrato.`,
-    );
+    if (announce)
+      report(
+        `${additions.length.toLocaleString('pt-BR')} ${pluralize(additions.length, 'amostra adicionada', 'amostras adicionadas')}`,
+      );
   }
 
-  function add(input: SampleInput[]): boolean {
-    if (readingFiles.current) return false;
+  function add(input: SampleInput[], announce = true): SessionSample[] | null {
+    if (readingFiles.current) return null;
     const additions = sessionSamples(input);
-    if (!precheck(additions)) return false;
-    append(additions);
-    return true;
+    if (!precheck(additions)) return null;
+    append(additions, announce);
+    return additions;
   }
 
-  async function addFiles(files: File[]) {
+  async function addFiles(files: File[]): Promise<SessionSample[] | null> {
     if (
       files.some(
         (file) =>
@@ -72,20 +76,17 @@ export function useSamples(report: (message: string) => void) {
           file.type !== 'application/json',
       )
     ) {
-      report(
-        'Selecione apenas arquivos .json. Nenhuma amostra foi adicionada.',
-      );
-      return;
+      report('Use apenas arquivos .json. Nada foi adicionado.', 'error');
+      return null;
     }
     if (
       readingFiles.current ||
       !files.length ||
       !precheck(files.map((file) => ({ name: file.name, bytes: file.size })))
     )
-      return;
+      return null;
     readingFiles.current = true;
     setReading(true);
-    report('Lendo arquivos localmente…');
     try {
       const input = await Promise.all(
         files.map(async (file) => ({
@@ -95,11 +96,12 @@ export function useSamples(report: (message: string) => void) {
       );
       const additions = sessionSamples(input);
       // Decoded text can exceed File.size, so recheck limits after reading.
-      if (precheck(additions)) append(additions);
+      if (!precheck(additions)) return null;
+      append(additions, true);
+      return additions;
     } catch {
-      report(
-        'Não foi possível ler os arquivos selecionados. Selecione-os novamente.',
-      );
+      report('Não foi possível ler os arquivos. Tente de novo.', 'error');
+      return null;
     } finally {
       readingFiles.current = false;
       setReading(false);
@@ -108,30 +110,39 @@ export function useSamples(report: (message: string) => void) {
 
   function remove(id: string) {
     setSamples((previous) => previous.filter((sample) => sample.id !== id));
-    report('Amostra removida. Analise para atualizar o contrato.');
+    if (selected === id) setSelected(null);
   }
 
-  function replace(
-    input: SampleInput[],
-    metadata: { dataset: string; method: string; endpoint: string },
-  ) {
-    setSamples(sessionSamples(input));
-    setDataset(metadata.dataset);
-    setMethod(metadata.method);
-    setEndpoint(metadata.endpoint);
+  function update(id: string, text: string) {
+    setSamples((previous) =>
+      previous.map((sample) =>
+        sample.id === id && sample.text !== text
+          ? { ...sample, text, bytes: new TextEncoder().encode(text).length }
+          : sample,
+      ),
+    );
+  }
+
+  function clear() {
+    setSamples([]);
+    setSelected(null);
+  }
+
+  function replace(input: SampleInput[]) {
+    const next = sessionSamples(input);
+    setSamples(next);
+    setSelected(next[0]?.id ?? null);
   }
 
   return {
     samples,
-    dataset,
-    method,
-    endpoint,
     reading,
-    setDataset,
-    setMethod,
-    setEndpoint,
+    selected,
+    select: setSelected,
+    clear,
     add,
     addFiles,
+    update,
     remove,
     replace,
   };

@@ -13,6 +13,7 @@ function PlainCode({
   onChange,
   onSubmit,
   readOnly,
+  placeholder,
 }: CodeEditorProps) {
   return (
     <div className={`code-editor${mode === 'viewer' ? ' code-viewer' : ''}`}>
@@ -21,17 +22,17 @@ function PlainCode({
           className="plain-code"
           aria-label={label}
           aria-describedby={describedBy}
+          placeholder={placeholder}
           value={value}
           readOnly={readOnly}
           onKeyDown={(event) => {
             if (
-              !readOnly &&
               onSubmit &&
               (event.ctrlKey || event.metaKey) &&
               event.key === 'Enter'
             ) {
               event.preventDefault();
-              onSubmit(event.shiftKey);
+              onSubmit(!event.shiftKey);
             }
           }}
           onChange={(event) => onChange?.(event.target.value)}
@@ -78,7 +79,7 @@ export function LazyCodeEditor(props: CodeEditorProps) {
           props.mode === 'viewer' ? (
             <PlainCode {...props} />
           ) : (
-            <div className="code-editor">Carregando editor…</div>
+            <div className="code-editor" />
           )
         }
       >

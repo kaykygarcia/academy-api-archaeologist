@@ -1,42 +1,77 @@
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import type { SampleInput as Sample } from '@api-archaeologist/core';
-import { SampleInput } from './SampleInput';
-import { SampleList } from './SampleList';
-import type { useSamples } from './useSamples';
+import { LazyCodeEditor as CodeEditor } from '../../components/LazyCodeEditor';
+import {
+  CloseIcon,
+  FileIcon,
+  PlusIcon,
+  TrashIcon,
+} from '../../components/icons';
+import type { Report, useSamples } from './useSamples';
+
+const modifier = /Mac/i.test(navigator.platform) ? '⌘' : 'Ctrl';
 
 export function SamplesPanel({
   state,
   report,
   locked,
   busy,
-  storageBusy,
   onAnalyze,
   onCancel,
 }: {
-  report: (message: string) => void;
   state: ReturnType<typeof useSamples>;
+  report: Report;
   locked: boolean;
   busy: boolean;
-  storageBusy: boolean;
-  onAnalyze: (additions?: Sample[]) => void;
+  onAnalyze: (samples: Sample[]) => void;
   onCancel: () => void;
 }) {
+  const hintId = useId();
   const depth = useRef(0);
   const [dragging, setDragging] = useState(false);
-  const {
-    samples,
-    dataset,
-    method,
-    endpoint,
-    reading,
-    setDataset,
-    setMethod,
-    setEndpoint,
-  } = state;
+  const [text, setText] = useState('');
+  const [number, setNumber] = useState(1);
+  const { samples, selected, reading } = state;
+  const shown = samples.find((sample) => sample.id === selected);
+  const draft = !shown;
+  const blocked = locked || reading;
+
+  function addDraft(announce: boolean) {
+    const added = state.add(
+      [{ name: `amostra-${number}.json`, text }],
+      announce,
+    );
+    if (!added) return null;
+    setNumber(number + 1);
+    setText('');
+    return added;
+  }
+
+  function submit(analyze: boolean) {
+    if (blocked) return;
+    if (!analyze) {
+      if (draft && text.trim()) addDraft(true);
+      return;
+    }
+    let all = samples.filter((sample) => sample.text.trim());
+    if (draft && text.trim()) {
+      const added = addDraft(false);
+      if (!added) return;
+      all = [...all, ...added];
+      state.select(added[0]?.id ?? null);
+    }
+    if (all.length) onAnalyze(all.map(({ name, text }) => ({ name, text })));
+  }
+
+  async function addFiles(files: File[]) {
+    const added = await state.addFiles(files);
+    if (added?.[0]) state.select(added[0].id);
+  }
+
   return (
     <section
-      className={`panel samples-panel${dragging && !locked ? ' dragging' : ''}`}
-      aria-labelledby="samples-heading"
+      className={`pane input-pane${dragging ? ' dragging' : ''}`}
+      aria-label="Amostras"
       onDragEnter={(event) => {
         if (!event.dataTransfer.types.includes('Files')) return;
         event.preventDefault();
@@ -46,7 +81,7 @@ export function SamplesPanel({
       onDragOver={(event) => {
         if (!event.dataTransfer.types.includes('Files')) return;
         event.preventDefault();
-        event.dataTransfer.dropEffect = locked ? 'none' : 'copy';
+        event.dataTransfer.dropEffect = blocked ? 'none' : 'copy';
       }}
       onDragLeave={(event) => {
         if (!event.dataTransfer.types.includes('Files')) return;
@@ -58,93 +93,132 @@ export function SamplesPanel({
         event.preventDefault();
         depth.current = 0;
         setDragging(false);
-        if (locked) report('Aguarde a operação atual terminar.');
-        else void state.addFiles(Array.from(event.dataTransfer.files));
+        if (blocked) report('Aguarde a operação atual terminar.', 'error');
+        else void addFiles(Array.from(event.dataTransfer.files));
       }}
     >
-      {dragging && !locked && (
-        <div className="drop-overlay">
-          Solte os arquivos JSON para adicionar
-        </div>
-      )}
-      <h2 id="samples-heading">Amostras ({samples.length})</h2>
-      <SampleInput
-        onAdd={state.add}
-        onAnalyze={onAnalyze}
-        onAddFiles={state.addFiles}
-        disabled={locked}
-        reading={reading}
-      />
-      <SampleList samples={samples} disabled={locked} onRemove={state.remove} />
-      <details>
-        <summary>Detalhes</summary>
-        <label>
-          Nome do conjunto
+      <header className="pane-header">
+        {samples.length ? (
+          <ul className="chips" aria-label="Amostras adicionadas">
+            {samples.map((sample) => (
+              <li
+                key={sample.id}
+                className={`chip${sample.id === selected ? ' active' : ''}`}
+              >
+                <button
+                  className="chip-label"
+                  aria-pressed={sample.id === selected}
+                  title={`${sample.bytes.toLocaleString('pt-BR')} bytes`}
+                  onClick={() => state.select(sample.id)}
+                >
+                  {sample.name}
+                </button>
+                <button
+                  className="chip-remove"
+                  disabled={blocked}
+                  aria-label={`Remover ${sample.name}`}
+                  onClick={() => state.remove(sample.id)}
+                >
+                  <CloseIcon />
+                </button>
+              </li>
+            ))}
+            <li className={`chip chip-new${draft ? ' active' : ''}`}>
+              <button
+                className="chip-label"
+                aria-pressed={draft}
+                onClick={() => state.select(null)}
+              >
+                <PlusIcon />
+                Nova
+              </button>
+            </li>
+          </ul>
+        ) : (
+          <p className="pane-title">Entrada</p>
+        )}
+        {samples.length > 0 && (
+          <button
+            className="icon-button"
+            disabled={blocked}
+            aria-label="Remover todas as amostras"
+            title="Remover todas"
+            onClick={state.clear}
+          >
+            <TrashIcon />
+          </button>
+        )}
+      </header>
+      <div className="editor-frame">
+        <CodeEditor
+          mode="input"
+          value={shown ? shown.text : text}
+          onChange={(value) =>
+            shown ? state.update(shown.id, value) : setText(value)
+          }
+          readOnly={blocked}
+          label="Amostra JSON"
+          placeholder="Cole uma resposta JSON ou solte arquivos .json aqui"
+          onSubmit={submit}
+          describedBy={hintId}
+        />
+      </div>
+      <footer className="pane-footer">
+        <label className={`button ghost${blocked ? ' disabled' : ''}`}>
+          <FileIcon />
+          <span>Arquivos</span>
           <input
-            value={dataset}
-            disabled={locked}
-            placeholder="Conjunto sem nome"
-            onChange={(event) => setDataset(event.target.value)}
+            className="sr-only"
+            type="file"
+            multiple
+            accept=".json,application/json"
+            disabled={blocked}
+            onChange={(event) => {
+              const files = Array.from(event.target.files ?? []);
+              event.target.value = '';
+              void addFiles(files);
+            }}
           />
         </label>
-        <div className="metadata">
-          <label>
-            Método (opcional)
-            <select
-              value={method}
-              disabled={locked}
-              onChange={(event) => setMethod(event.target.value)}
-            >
-              <option value="">Não especificado</option>
-              {['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'].map(
-                (value) => (
-                  <option key={value}>{value}</option>
-                ),
-              )}
-            </select>
-          </label>
-          <label>
-            Endpoint (opcional)
-            <input
-              className="mono"
-              maxLength={2000}
-              placeholder="/orders/:id"
-              value={endpoint}
-              disabled={locked}
-              onChange={(event) => setEndpoint(event.target.value)}
-            />
-          </label>
-        </div>
-      </details>
-      <div className="actions">
+        <span className="spacer" />
+        {draft && text.trim() && (
+          <button
+            className="ghost"
+            disabled={blocked}
+            title={`${modifier}+Shift+Enter`}
+            onClick={() => submit(false)}
+          >
+            <PlusIcon />
+            Adicionar
+          </button>
+        )}
+        {busy && (
+          <button className="ghost cancel" onClick={onCancel}>
+            Cancelar
+          </button>
+        )}
         <button
           className="primary"
-          disabled={locked || !samples.length}
-          aria-describedby="analysis-reason"
-          onClick={() => onAnalyze()}
+          disabled={
+            blocked ||
+            !(samples.some((sample) => sample.text.trim()) || text.trim())
+          }
+          onClick={() => submit(true)}
         >
-          Analisar amostras
+          Analisar
+          <kbd aria-hidden="true">{modifier} ↵</kbd>
         </button>
-        {busy && <button onClick={onCancel}>Cancelar</button>}
-      </div>
-      <p id="analysis-reason" className="note">
-        {analysisReason(busy, reading, storageBusy, samples.length)}
-      </p>
+        <span id={hintId} className="sr-only">
+          {modifier}+Enter analisa. {modifier}+Shift+Enter adiciona sem
+          analisar.
+        </span>
+      </footer>
+      {dragging && (
+        <div className="drop-overlay" aria-hidden="true">
+          <FileIcon />
+          {blocked ? 'Aguarde a operação atual' : 'Solte para adicionar'}
+        </div>
+      )}
     </section>
   );
-}
-
-function analysisReason(
-  busy: boolean,
-  reading: boolean,
-  storageBusy: boolean,
-  count: number,
-): string {
-  if (busy) return 'Processando. Cancele para voltar ao resultado anterior.';
-  if (reading)
-    return 'Aguarde a conclusão da leitura dos arquivos selecionados.';
-  if (storageBusy) return 'Aguarde a conclusão da operação com o snapshot.';
-  if (!count)
-    return 'Adicione pelo menos uma amostra para habilitar a análise.';
-  return '';
 }

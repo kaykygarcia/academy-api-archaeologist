@@ -13,11 +13,11 @@ export type Field = {
 export function FieldDetails({ field }: { field: Field }) {
   return (
     <aside className="field-details" aria-label="Evidências do campo">
-      <p className="eyebrow">Evidências do campo</p>
+      <p className="eyebrow">Evidências</p>
       <h3>
         <code>{field.path}</code>
       </h3>
-      <p>
+      <p className="presence">
         {field.presence
           ? `Observado em ${field.presence.present.toLocaleString('pt-BR')}/${field.presence.parents.toLocaleString('pt-BR')} ${pluralize(field.presence.parents, 'objeto pai', 'objetos pai')}`
           : `${field.value.observations.toLocaleString('pt-BR')} ${pluralize(field.value.observations, 'valor observado', 'valores observados')}`}

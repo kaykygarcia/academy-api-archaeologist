@@ -67,24 +67,16 @@ export async function loadExample(page: Page) {
     .getByRole('button', { name: 'Carregar exemplo', exact: true })
     .click();
   await expectSamples(page, 3);
-  await expect(
-    page.getByRole('list', { name: 'Campos do contrato', exact: true }),
-  ).toBeVisible();
 }
 
-export async function saveBaseline(page: Page) {
-  await page
-    .getByRole('button', { name: 'Salvar snapshot', exact: true })
-    .click();
-  await page
-    .getByLabel('Nome do snapshot', { exact: true })
-    .fill('Orders baseline');
-  await page.getByRole('button', { name: 'Salvar', exact: true }).click();
+export function analyzeButton(page: Page) {
+  return page.getByRole('button', { name: 'Analisar', exact: true });
+}
+
+export async function openStructure(page: Page) {
+  await page.getByRole('tab', { name: 'Estrutura', exact: true }).click();
   await expect(
-    page.getByRole('button', { name: 'Salvar snapshot', exact: true }),
-  ).toBeFocused();
-  await expect(
-    page.getByRole('tab', { name: 'Snapshots (1)', exact: true }),
+    page.getByRole('list', { name: 'Campos do contrato', exact: true }),
   ).toBeVisible();
 }
 

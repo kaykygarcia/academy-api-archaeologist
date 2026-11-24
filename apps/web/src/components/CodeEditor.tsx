@@ -1,8 +1,50 @@
 import { useEffect, useEffectEvent, useRef } from 'react';
 import { basicSetup, minimalSetup } from 'codemirror';
 import { Compartment, EditorState, Prec, Transaction } from '@codemirror/state';
-import { EditorView, keymap, lineNumbers } from '@codemirror/view';
+import {
+  EditorView,
+  keymap,
+  lineNumbers,
+  placeholder as hint,
+} from '@codemirror/view';
+import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
+import { tags } from '@lezer/highlight';
 import { json } from '@codemirror/lang-json';
+
+// Colors come from CSS variables so one style follows both themes.
+const highlight = syntaxHighlighting(
+  HighlightStyle.define([
+    {
+      tag: [tags.string, tags.special(tags.string)],
+      color: 'var(--syn-string)',
+    },
+    { tag: [tags.number, tags.bool, tags.null], color: 'var(--syn-literal)' },
+    {
+      tag: [tags.keyword, tags.modifier, tags.operatorKeyword],
+      color: 'var(--syn-keyword)',
+    },
+    {
+      tag: [tags.propertyName, tags.definition(tags.propertyName)],
+      color: 'var(--syn-property)',
+    },
+    {
+      tag: [tags.typeName, tags.className, tags.standard(tags.variableName)],
+      color: 'var(--syn-type)',
+    },
+    {
+      tag: [
+        tags.definition(tags.variableName),
+        tags.function(tags.variableName),
+      ],
+      color: 'var(--syn-name)',
+    },
+    {
+      tag: [tags.punctuation, tags.bracket, tags.separator, tags.operator],
+      color: 'var(--syn-punctuation)',
+    },
+    { tag: tags.comment, color: 'var(--muted)', fontStyle: 'italic' },
+  ]),
+);
 
 export type CodeEditorProps = {
   mode: 'input' | 'viewer';
@@ -13,6 +55,7 @@ export type CodeEditorProps = {
   language?: 'json' | 'typescript';
   label: string;
   describedBy?: string;
+  placeholder?: string;
 };
 
 export function CodeEditor({
@@ -24,6 +67,7 @@ export function CodeEditor({
   language = 'json',
   label,
   describedBy,
+  placeholder = '',
 }: CodeEditorProps) {
   const host = useRef<HTMLDivElement>(null);
   const editor = useRef<EditorView | null>(null);
@@ -34,7 +78,7 @@ export function CodeEditor({
   const initial = useEffectEvent(() => ({ value, readOnly }));
   const change = useEffectEvent((text: string) => onChange?.(text));
   const submit = useEffectEvent((analyze: boolean) => {
-    if (readOnly || !onSubmit) return false;
+    if (!onSubmit) return false;
     onSubmit(analyze);
     return true;
   });
@@ -48,12 +92,14 @@ export function CodeEditor({
         doc: start.value,
         extensions: [
           viewer ? [minimalSetup, lineNumbers()] : basicSetup,
+          highlight,
+          placeholder ? hint(placeholder) : [],
           viewer
             ? []
             : Prec.highest(
                 keymap.of([
-                  { key: 'Mod-Enter', run: () => submit(false) },
-                  { key: 'Mod-Shift-Enter', run: () => submit(true) },
+                  { key: 'Mod-Enter', run: () => submit(true) },
+                  { key: 'Mod-Shift-Enter', run: () => submit(false) },
                 ]),
               ),
           EditorState.phrases.of({
@@ -108,7 +154,7 @@ export function CodeEditor({
       view.destroy();
       editor.current = null;
     };
-  }, [viewer, label, describedBy]);
+  }, [viewer, label, describedBy, placeholder]);
   useEffect(() => {
     const compartment = syntax.current;
     if (!compartment) return;

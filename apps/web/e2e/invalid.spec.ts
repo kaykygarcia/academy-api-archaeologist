@@ -1,27 +1,23 @@
-import { test, expect, loadExample } from './helpers';
+import { test, expect, loadExample, analyzeButton } from './helpers';
 
 test('invalid JSON names its sample and clears the previous contract', async ({
   page,
 }) => {
   await loadExample(page);
+  await page.getByRole('button', { name: 'Nova', exact: true }).click();
   await page.getByLabel('Amostra JSON', { exact: true }).fill('{"broken":');
-  await page
-    .getByRole('button', { name: 'Adicionar amostra', exact: true })
-    .click();
-  await page
-    .getByRole('button', { name: 'Analisar amostras', exact: true })
-    .click();
+  await analyzeButton(page).click();
   await expect(
     page.getByRole('list', { name: 'Resumo de erros' }),
   ).toContainText('amostra-1.json');
-  await expect(page.getByRole('status')).toContainText('Falha na validação');
   await expect(
-    page.getByRole('list', { name: 'Campos do contrato', exact: true }),
+    page.getByRole('status').filter({ hasText: 'Falha na validação' }),
+  ).toHaveCount(1);
+  await expect(
+    page.getByRole('tablist', { name: 'Visualização do contrato' }),
   ).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Copiar/ })).toHaveCount(0);
   await expect(
-    page.getByText('Adicione amostras e analise-as para examinar o contrato.'),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: 'Exportar', exact: true }),
+    page.getByLabel('Resumo do contrato', { exact: true }),
   ).toHaveCount(0);
 });

@@ -1,11 +1,10 @@
-import { test, expect, expectSamples } from './helpers';
+import { test, expect, expectSamples, analyzeButton } from './helpers';
 
 test('uploads two synthetic files, removes one and reanalyzes', async ({
   page,
 }) => {
   await page.goto('/');
-  await page.getByRole('tab', { name: 'Enviar arquivos' }).click();
-  await page.getByLabel('Escolher arquivos JSON').setInputFiles([
+  await page.getByLabel('Arquivos', { exact: true }).setInputFiles([
     {
       name: 'first.json',
       mimeType: 'application/json',
@@ -17,19 +16,19 @@ test('uploads two synthetic files, removes one and reanalyzes', async ({
       buffer: Buffer.from('{"id":2}'),
     },
   ]);
+  await expect(page.locator('.toast')).toHaveText('2 amostras adicionadas');
   await expect(
-    page.getByRole('button', { name: 'Remover second.json' }),
-  ).toBeVisible();
-  await page
-    .getByRole('button', { name: 'Analisar amostras', exact: true })
-    .click();
+    page.getByRole('button', { name: 'first.json', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByLabel('Amostra JSON', { exact: true })).toHaveText(
+    '{"id":1}',
+  );
+  await analyzeButton(page).click();
   await expectSamples(page, 2);
   await page.getByRole('button', { name: 'Remover second.json' }).click();
   await expect(
     page.getByRole('button', { name: 'Remover second.json' }),
   ).toHaveCount(0);
-  await page
-    .getByRole('button', { name: 'Analisar amostras', exact: true })
-    .click();
+  await analyzeButton(page).click();
   await expectSamples(page, 1);
 });

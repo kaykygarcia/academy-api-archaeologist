@@ -9,6 +9,7 @@ import {
   type InferredContract,
   type SearchResult,
 } from '@api-archaeologist/core';
+import { ChevronIcon } from '../../components/icons';
 import { FieldDetails, type Field } from './FieldDetails';
 
 type Search = SearchResult & {
@@ -119,7 +120,7 @@ function TreeRow({
             aria-expanded={expanded}
             onClick={() => onExpand(field.path, !expanded)}
           >
-            {expanded ? '−' : '+'}
+            <ChevronIcon />
           </button>
         )}
         <button
@@ -158,6 +159,7 @@ function TreeRow({
           {remaining > 0 && (
             <li>
               <button
+                className="ghost small show-more"
                 onClick={() => {
                   setPage({
                     query,
@@ -190,7 +192,7 @@ export function ContractTree({
     value: contract.root,
   });
   return (
-    <>
+    <div className="structure">
       <div className="tree">
         <ul aria-label="Campos do contrato">
           {(!search || search.visible.has('$')) && (
@@ -213,6 +215,6 @@ export function ContractTree({
         </ul>
       </div>
       <FieldDetails field={field} />
-    </>
+    </div>
   );
 }

@@ -1,7 +1,10 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { applyTheme, storedTheme } from './lib/theme';
 import './styles/index.css';
+
+applyTheme(storedTheme());
 
 const root = document.getElementById('root');
 

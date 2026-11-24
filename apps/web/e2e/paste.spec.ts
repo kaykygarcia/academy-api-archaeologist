@@ -1,4 +1,4 @@
-import { test, expect, expectSamples } from './helpers';
+import { test, expect, expectSamples, analyzeButton } from './helpers';
 
 test('pasted responses infer an optional field and copy the actual TypeScript', async ({
   page,
@@ -11,27 +11,54 @@ test('pasted responses infer an optional field and copy the actual TypeScript', 
   await page.goto('/');
   const editor = page.getByLabel('Amostra JSON', { exact: true });
   await editor.fill('{"id":1,"coupon":"SAMPLE"}');
-  await page
-    .getByRole('button', { name: 'Adicionar amostra', exact: true })
-    .click();
+  await page.getByRole('button', { name: 'Adicionar', exact: true }).click();
+  await expect(editor.locator('.cm-placeholder')).toBeVisible();
   await editor.fill('{"id":2}');
-  await page
-    .getByRole('button', { name: 'Adicionar amostra', exact: true })
-    .click();
-  await page
-    .getByRole('button', { name: 'Analisar amostras', exact: true })
-    .click();
+  await analyzeButton(page).click();
   await expectSamples(page, 2);
-  await expect(page.getByRole('button', { name: /^coupon\?/ })).toContainText(
-    'opcional',
-  );
-  await page.getByRole('tab', { name: 'Código', exact: true }).click();
-  await page.getByRole('button', { name: 'Copiar', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: 'amostra-2.json', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
+  await expect(editor).toHaveText('{"id":2}');
+  await page
+    .getByRole('button', { name: 'Copiar TypeScript', exact: true })
+    .click();
   await expect(
     page.getByRole('button', { name: 'Copiado', exact: true }),
   ).toBeVisible();
-  const copied = await page.evaluate(() => navigator.clipboard.readText());
-  expect(copied).toBe(
+  await expect(page.locator('.toast')).toHaveText('TypeScript copiado');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
     'export type ApiResponse = {\n  coupon?: string;\n  id: number;\n};\n',
   );
+});
+
+test('editing a sample after analysis feeds the next analysis', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const editor = page.getByLabel('Amostra JSON', { exact: true });
+  await editor.fill('{"id":1}');
+  await analyzeButton(page).click();
+  await expectSamples(page, 1);
+  await editor.fill('{"id":1,"name":"Ada"}');
+  await analyzeButton(page).click();
+  await expect(
+    page.getByLabel('Código TypeScript', { exact: true }),
+  ).toContainText('name: string;');
+  await expectSamples(page, 1);
+  await page.getByRole('button', { name: 'Nova', exact: true }).click();
+  await expect(editor.locator('.cm-placeholder')).toBeVisible();
+  await editor.fill('{"id":2}');
+  await analyzeButton(page).click();
+  await expectSamples(page, 2);
+  await expect(
+    page.getByLabel('Código TypeScript', { exact: true }),
+  ).toContainText('name?: string;');
+  await page
+    .getByRole('button', { name: 'Remover todas as amostras', exact: true })
+    .click();
+  await expect(
+    page.getByRole('list', { name: 'Amostras adicionadas' }),
+  ).toHaveCount(0);
+  await expect(analyzeButton(page)).toBeDisabled();
 });
