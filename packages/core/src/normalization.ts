@@ -81,12 +81,6 @@ export function summarizeContract(contract: InferredContract): ContractSummary {
   };
 }
 
-export function formatKindCounts(slot: ValueStats): string {
-  return observedKinds(slot)
-    .map((kind) => `${kind} ${slot.kindCounts[kind].toLocaleString('pt-BR')}`)
-    .join(', ');
-}
-
 export function pathFromSegments(segments: readonly (string | null)[]): string {
   return segments.reduce<string>(
     (path, segment) =>

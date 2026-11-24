@@ -105,9 +105,8 @@ The application is deployed at https://academy-api-archaeologist.kaykygarcia.dev
 
 - [Evidence model](packages/core/src/types.ts) and [inference](packages/core/src/inference.ts)
 - [Normalization and evidence counts](packages/core/src/normalization.ts)
-- [Tree search](packages/core/src/search.ts), [contract validation](packages/core/src/validate.ts) and [own-field checks](packages/core/src/own.ts)
+- [Tree search](packages/core/src/search.ts)
 - [Generators](packages/core/src/generators)
-- The core also keeps [contract comparison](packages/core/src/comparison.ts), [aligned rows](packages/core/src/align.ts), [drift labels](packages/core/src/labels.ts) and a [Markdown drift report](packages/core/src/report.ts), with tests. The interface does not expose them.
 - [Worker adapter](apps/web/src/workers/analysis.worker.ts)
 - [App state](apps/web/src/App.tsx), [sample pane and drop zone](apps/web/src/features/samples/SamplesPanel.tsx) and [sample state](apps/web/src/features/samples/useSamples.ts)
 - [Result pane](apps/web/src/features/contract/ContractSection.tsx), [incremental tree](apps/web/src/features/contract/ContractTree.tsx) and [tabs](apps/web/src/components/Tabs.tsx)

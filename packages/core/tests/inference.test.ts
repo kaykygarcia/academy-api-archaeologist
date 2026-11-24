@@ -1,6 +1,5 @@
 import { expect, test } from 'vitest';
 import {
-  compareContracts,
   describeType,
   elementPath,
   generateJsonSchema,
@@ -143,18 +142,10 @@ test('one observation reports 1 of 1 parent objects without claiming requirednes
   expect(describeType(property(contract.root, 'once').value)).toBe('number');
   expect(generateTypeScript(contract)).toContain('once: number;');
   expect(generateTypeScript(contract)).not.toContain('once?:');
-  const changes = compareContracts(
-    inferContract([{ a: 1 }]),
-    inferContract([{ a: 1 }, {}]),
-  );
-  expect(changes).toHaveLength(1);
-  const [change] = changes;
-  expect(change).toMatchObject({
-    code: 'presence-reduced',
-    previous: '1/1 objeto pai',
-    current: '1/2 objetos pai',
-  });
-  expect(change?.explanation).not.toMatch(/\bobrigatóri[oa]\b/i);
+  const reduced = inferContract([{ a: 1 }, {}]);
+  expect(property(reduced.root, 'a').presentCount).toBe(1);
+  expect(reduced.root.kindCounts.object).toBe(2);
+  expect(generateTypeScript(reduced)).toContain('a?: number;');
 });
 
 test('INF-09 heterogeneous roots and nested arrays keep canonical kinds', () => {

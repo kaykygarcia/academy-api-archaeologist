@@ -37,31 +37,6 @@ export type ContractSummary = {
   conflictPathCount: number;
 };
 
-export type ChangeSeverity =
-  'potentially-breaking' | 'review' | 'informational';
-
-export type ChangeCode =
-  | 'property-added'
-  | 'property-not-observed'
-  | 'type-changed'
-  | 'type-expanded'
-  | 'type-narrowed'
-  | 'became-nullable'
-  | 'null-not-observed'
-  | 'presence-reduced'
-  | 'presence-increased'
-  | 'elements-not-observed'
-  | 'elements-observed';
-
-export type ContractChange = {
-  code: ChangeCode;
-  path: string;
-  severity: ChangeSeverity;
-  previous: string | null;
-  current: string | null;
-  explanation: string;
-};
-
 export type InferenceErrorCode =
   | 'no-samples'
   | 'too-many-samples'
@@ -69,8 +44,7 @@ export type InferenceErrorCode =
   | 'session-too-large'
   | 'depth-exceeded'
   | 'too-many-values'
-  | 'invalid-json'
-  | 'incompatible-contract';
+  | 'invalid-json';
 
 export class InferenceError extends Error {
   readonly code: InferenceErrorCode;
